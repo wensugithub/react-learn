@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../build/react.js"></script>
+    <script src="../build/react-dom.js"></script>
+    <script src="../build/browser.min.js"></script>
+    <title>学习react</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="text/babel">
+      var MessageBox = React.createClass({
+          getInitialState: function() {
+          	console.log('getInitialState');
+            return {
+              count: 0
+            }
+          },
+          getDefaultProps: function() {
+          	console.log('getDefaultProps');
+          },
+          componentWillMount: function() {
+ 			      console.log('componentWillMount');
+          },
+          componentDidMount: function() {
+          	console.log('componentDidMount');
+          },
+          componentWillUnmount: function() {
+          		 alert('you will kill me？');
+          },
+          killMe: function() {
+          		ReactDOM.unmountComponentAtNode(document.getElementById('app'));
+          },
+          doUpdate: function() {
+              this.setState({
+                count: this.state.count + 1
+              })
+          },
+          shouldComponentUpdate: function(nextProps, nextState) {
+              console.log('shouldComponentUpdate');
+              //if (nextState.count > 3) {
+              //  return false;
+              //}
+              return true;
+          },
+          componentWillUpdate: function(nextProps, nextState) {
+              console.log('componentWillUpdate');
+          },
+          componentDidUpdate: function(prevProps, prevState) {
+              console.log('componentDidUpdate');
+          },
+      	  render: function() {
+      	  	console.log('render');
+      	  	return (<div>
+                      <h1>计数：{this.state.count}</h1>
+                      <button onClick={this.killMe}>删除这个组件</button><br/>
+                      <button onClick={this.doUpdate}>手动更新</button>
+                      <SubMessage count={this.state.count}/>
+                    </div>)
+      	  }
+      });
+      var SubMessage = React.createClass({
+          componentWillReceiveProps: function(nextProps) {
+              console.log('componentWillReceiveProps');
+          },
+          shouldComponentUpdate: function(nextProps, nextState) {
+              console.log('子组件shouldComponentUpdate');
+              if (nextProps.count > 5) {
+                return false;
+              }
+              return true;
+          },
+          render: function() {
+            return (<div>
+                      <h3>{this.props.count}</h3>
+                    </div>)
+          }
+      });
+     ReactDOM.render(
+      	<MessageBox/>,
+        document.getElementById('app'),
+        function() {
+        	console.log('渲染完成了！');
+        }
+      );
+    </script>
+  </body>
+</html>
