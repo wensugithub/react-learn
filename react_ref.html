@@ -19,7 +19,7 @@
                 textareaValue: 'some text here...'
      		}
      	},
-      handleSubmit: function(e) {
+      	handleSubmit: function(e) {
             e.preventDefault();
             var formData = {
               input: ReactDOM.findDOMNode(this.refs.goodInput).value,
@@ -32,12 +32,12 @@
             console.log(formData);
             this.refs.goodRadio.saySomething();
         },
-      handleRadio: function(e) {
+      	handleRadio: function(e) {
           this.setState({
             radioValue: e.target.value
           })
-      },
-      handleCheck: function(e) {
+      	},
+      	handleCheck: function(e) {
           var checkValues = this.state.checkValues.slice();
           var newVal = e.target.value;
           var index = checkValues.indexOf(newVal)
@@ -49,8 +49,13 @@
           this.setState({
             checkValues: checkValues
           })
+      	},
 
-      },
+      	testReadDom: function(e) {
+      		console.log("testReadDom");
+      		console.log(ReactDOM.findDOMNode(this.refs.testRef).getElementsByTagName("span")[0].innerText);
+      	},
+
      	render: function() {
      		return (
                     <form onSubmit={this.handleSubmit}>
@@ -73,7 +78,12 @@
                         <br/>
                         <textarea ref="goodTextarea" defaultValue={this.state.textareaValue}></textarea>
                         <br/>
-                        <button type="submit">提交</button>
+                        <button type="submit">提交</button><br/>
+                        <br/>
+                        测试读取子节点：
+                        <div ref="testRef" onClick={this.testReadDom}>
+                        	<span>abc</span>
+                        </div>
                     </form>
      			)
      	}
