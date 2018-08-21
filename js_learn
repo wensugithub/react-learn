@@ -1,0 +1,3446 @@
+js　learn
+js勉強
+
+const ATTR_BLANK = '0';
+const ATTR_DISPLAY_ONLY = '1';
+const ATTR_INPUT = '2';
+const ATTR_INPUT_REQUIRED = '3';
+const ATTR_INPUT_DISABLED = '4';
+const ATTR_HIDDEN = '5';
+
+const MODE_INITIAL = '0';
+const MODE_NEW = '1';
+const MODE_UPDATE = '2';
+const MODE_INQUIRY = '4';
+const MODE_REFER = '5';
+
+var labelFormatter = function(itemName, attr, value, func, list, suffix) {
+        var fix = suffix;
+        if (fix == null) {
+                fix = 0;
+        }
+        if (attr == ATTR_BLANK) {
+                return '';
+        } else if ($("#"+itemName)[fix]) {//値の上書きをしたい場合
+                $("#"+itemName).text(value);
+                return '';
+        } else if (itemName == "slipTotalAmtExtax") {// 伝票合計金額の頭に0付く対応
+                var tmplen = $('#divslipTotalAmtExtax2 > #' + itemName).length;
+                if (tmplen > 0) {
+                        $('#divslipTotalAmtExtax2 > #' + itemName).remove();
+                }
+        } else if (itemName == "poDate") {// 発注日重複対応
+                var tmplenPoDate = $('#divPoDate2 > #' + itemName).length;
+                if (tmplenPoDate > 0) {
+                        $('#divPoDate2 > #' + itemName).remove();
+                }
+        }
+        if (value==null) {
+                value = '';
+        }
+        // 倉庫の場合
+        if (itemName == 'locationCd' && value != '') {
+                $.each(list, function(index){
+                        if (this.keyName == '返品先倉庫') {
+                                return true;
+                        }
+                        if(this.value == value) {
+                                value = this.keyName;
+                                return false;
+                        }
+                });
+        }
+        var html = '<label id="' + itemName + '" name="' + itemName + '" style="height:40px; vertical-align:middle; margin-top:10px;';
+        if (itemName=='slipTotalAmtExtaxBeforeDiscount'||itemName=='slipDiscountTotalAmt'||itemName=='slipTotalAmtExtax'
+                ||itemName=='slipTaxableTotalAmtExtax'||itemName=='slipTaxAmt'
+                ||itemName=='pointDiscountAmtItem'||itemName=='tPointDiscountAmtItem'||itemName=='expenseTax'
+                ||itemName=='pointDiscountAmtSalesCharge'||itemName=='tPointDiscountAmtSalesCharge'||itemName=='expenseExtaxDiscounted') {
+                html += 'width: 100px; text-align: right;';
+        }
+        if (itemName=='specialKindCode1Nm' || itemName=='specialKindCode2Nm' || itemName=='specialKindCode3Nm' || itemName=='costCenterNm'
+                || itemName=='scmOrdcstmCd' || itemName=='ordcstmNm') {
+                if (itemName=='scmOrdcstmCd' || itemName=='ordcstmNm') {
+                        html += ' display: table-cell; float: left;';
+                }
+                if(itemName=='ordcstmNm'){
+                        html += 'margin-left: 10px;';                        
+                }
+        } else {
+                html += ' display: table-cell;';
+        }
+        html += '">' + value + '</label>';
+        return html;
+};
+
+var slipTotalAmtExtaxFormatter2 = function(itemName, attr, value, func, list, suffix) {
+        var fix = suffix;
+        if (fix == null) {
+                fix = 0;
+        }
+        if (attr == ATTR_BLANK) {
+                return '';
+        } else if ($("#"+itemName)[fix]) {//値の上書きをしたい場合
+                $("#"+itemName).text(value);
+                return '';
+        }  else if (itemName == "slipTotalAmtExtax") {// 伝票合計金額の頭に0付く対応
+        } else if (itemName == "slipTotalAmtExtax") {// 伝票合計金額の頭に0付く対応
+                var tmplen = $('#divslipTotalAmtExtax2 > #' + itemName).length;
+                if (tmplen > 0) {
+                        $('#divslipTotalAmtExtax2 > #' + itemName).remove();
+                }
+        } else if (itemName == "poDate") {// 発注日重複対応
+                var tmplenPoDate = $('#divPoDate2 > #' + itemName).length;
+                if (tmplenPoDate > 0) {
+                        $('#divPoDate2 > #' + itemName).remove();
+                }
+        }
+        if (value==null) {
+                value = '';
+        }
+        
+        var html = '<label id="' + itemName + '" name="' + itemName + '" style="height:40px; vertical-align:middle;';
+        if (itemName=='specialKindCode1Nm' || itemName=='specialKindCode2Nm' || itemName=='specialKindCode3Nm' || itemName=='costCenterNm'
+                || itemName=='scmOrdcstmCd') {
+        } else {
+                html += ' display: table-cell;';
+        }
+        html += '">' + String(value).replace( /(\d)(?=(\d\d\d)+(?!\d))/g, '$1,' ) + '</label>';
+        return html;
+};
+
+var slipTotalAmtExtaxFormatter = function(itemName, attr, value, func, list) {
+        if (attr == ATTR_BLANK) {
+                return '';
+        } else if ($('#'+itemName)[0] && $('#'+itemName)[1]) {//値の上書きをしたい場合
+                $('[id='+itemName+']').each(function(){ $(this).val(value); });
+                return '';
+        }
+        if (value==null) {
+                value = '';
+        }
+        var html = '<label id="' + itemName + '" name="' + itemName + 
+        '" style="height:40px; vertical-align:middle; display: table-cell; comma:true;">' + value + '</label>';
+        return html;
+}
+
+var labelSituationFormatter = function(itemName, attr, value, func, list) {
+        if (value==null) {
+                value = '';
+        }
+        if (value=='0') {
+                value = '○';
+        } else if (value=='1') {
+                value = 'x';
+        } else if (value=='2') {
+                value = '-';
+        }
+
+        if (attr == ATTR_BLANK) {
+                return '';
+        } else if ($("#"+itemName)[0]) {//値の上書きをしたい場合
+                $("#"+itemName).text(value);
+                return '';
+        }
+        var html = '<label id="' + itemName + '" name="' + itemName + '" style="height:40px; text-align:left; vertical-align:middle; display: table-cell; margin-top:5px;">' + value + '</label>';
+        return html;
+};
+
+var textFormatter = function(itemName, attr, value, func, list) {
+        var html = '';
+        if (attr == ATTR_BLANK) {
+                return html;
+        } else if (attr == ATTR_DISPLAY_ONLY) {
+                html = labelFormatter(itemName, attr, value, func, list);
+        } else if ($("#"+itemName)[0]) {//値の上書きをしたい場合
+                $("#"+itemName).val(value);        
+                //$('[id='+itemName+']').each(function(){ $(this).val(value); });
+                return '';
+        } else {
+                if (value==null) {
+                        value = '';
+                }
+                var tmpLenth = 230;
+                var tmpTop = 0;
+                var tmpLeft = 0;
+                if(itemName == 'scmOrdcstmCd'){
+                        tmpTop = 10;
+                }
+                if (itemName == 'ordcstmNm') {
+                        tmpLenth = 460;
+                        tmpLeft = 10;
+                        tmpTop = 10;
+                }
+                if (itemName == 'shipcstmNm') {
+                        tmpLenth = 460;
+                }
+                if(itemName == 'poDate'){
+                        tmpLenth = 140;
+                        tmpTop = 5;
+                }
+                html += '<input type="text" id="' + itemName + '" name="' + itemName + '" value="' + value
+                + '" style="width: ' + tmpLenth + 'px;height:30px; margin-top: ' + tmpTop + 'px; margin-left:'+ tmpLeft +'px; vertical-align:middle;"';
+                if (attr == ATTR_INPUT_DISABLED) {
+                        //html += ' disabled="disabled"';
+                }
+                if (func != null && func!='') {
+                        html += ' onchange="' + func + '"';
+                }
+                html += '>';                
+        }
+        return html;
+};
+
+var postCdFormatter = function(itemName, attr, value, func, list) {
+        var html = '';
+        var postcd1 = '';
+        var postcd2 = '';
+        if (attr == ATTR_BLANK) {
+                return html;
+        } else if (attr == ATTR_DISPLAY_ONLY) {
+                html = labelFormatter(itemName, attr, value, func, list);
+        } else if ($("#"+itemName+'1')[0]) {//値の上書きをしたい場合
+                if (value!=null) { 
+                        postcd1 = value.substring(0,3);
+                        postcd2 = value.substring(3);
+                }
+                $("#"+itemName+'1').val(postcd1);
+                $("#"+itemName+'2').val(postcd2);
+                return '';
+        } else {
+                if (value!=null) { 
+                        postcd1 = value.substring(0,3);
+                        postcd2 = value.substring(3);
+                }
+                html = '<span id='+itemName+'><input type="text" id="' + itemName + '1" name="' + itemName + '1" value="' + postcd1
+                + '" margin-top="0px" style="width: 100px;height:30px; vertical-align:middle; margin-top:5px;"';
+                if (attr == ATTR_INPUT_DISABLED) {
+                        //html += ' disabled="disabled"';
+                }
+                html += '>';                
+                html += ' - <input type="text" id="' + itemName + '2" name="' + itemName + '2" value="' + postcd2
+                + '" margin-top="0px" style="width: 120px;height:30px; vertical-align:middle; margin-top:5px;"';
+                if (attr == ATTR_INPUT_DISABLED) {
+                        //html += ' disabled="disabled"';
+                }
+                html += '></span>';                
+        }
+        return html;
+};
+
+var linkFormatter = function(itemName, attr, value, func, list) {
+        var html = '';
+        if (attr == ATTR_BLANK) {
+                return html;
+        } else if ($("#"+itemName)[0]) {//値の上書きをしたい場合
+                return '';
+        } else {
+                html = '<img id="' + itemName + '" class="imgItemCd" style="cursor:pointer;margin-left:3px;vertical-align:middle;" style="vertical-align:middle" src="/scm/resources/img/icon/icon_search_common_min_blue.png"';
+                if (onclick != "") {
+                        html += ' onclick="' + func + '"';
+                }                
+                html += '/>';
+        }
+        return html;
+};
+
+var hiddenFormatter = function(itemName, attr, value, func, list) {
+        if (value==null) {
+                value = '';
+        }
+        if ($("#"+itemName)[0]) {
+                $("#"+itemName).val(value);
+                return "";
+        }        
+        return '<input type="text" id="' + itemName + '" value="' + value + '"/>';
+};
+
+var calendarFormatter = function(itemName, attr, value, func, list) {
+        var html;
+        if (value==null) {
+                value = '';
+        }
+        if (attr == ATTR_BLANK) {
+                return '';
+        } else if (attr == ATTR_DISPLAY_ONLY) {
+                html = labelFormatter(itemName, attr, value, func, list);
+                return html;
+        } else if ($('#'+itemName)[0]) {//値の上書きをしたい場合
+                $('#'+itemName).val(value);
+                return '';
+        } else {
+         html = '<input style="width:140px; height:30px; vertical-align:middle; margin-top:5px; block:inline;" type="text" id="' + itemName + '" placeholder="YYYY/MM/DD" id="' + itemName + '" value="' + value + '"/>';
+        return html;
+        }
+};
+
+var chkboxFormatter = function(itemName, attr, value, func, list) {
+        if ($("#"+itemName)[0]) {//値の上書きをしたい場合
+                $("#"+itemName).val(value);
+                return "";
+        }        
+        return '<input type="checkbox" id="' + itemName + '" value="off" class="checkboxsize"/>';
+};
+
+var dropDownFormatter = function(itemName, attr, value, func, list) {
+        if (attr == ATTR_BLANK) {
+                return '';
+        } else if (attr == ATTR_DISPLAY_ONLY || attr == ATTR_HIDDEN) {
+                var html = labelFormatter(itemName, attr, value, func, list);
+                return html;
+        } else if ($("#"+itemName)[0]) {//値の上書きをしたい場合
+                $("#"+itemName).val(value);
+                return "";
+        } else {
+                var select = '<SELECT id="' + itemName + '" style="width: 200px; height:30px; margin-top:5px;"';
+                if (func != null && func !="") {
+                        select += ' onchange="' + func + '"';                        
+                }
+                if (attr == ATTR_INPUT_DISABLED) {
+                        //select += ' disabled="disabled"';
+                }
+                select += '>';
+                if (isNull(list) == false && list != undefined) {
+                        var len = list.length;
+                        var defaultLoc;
+                        for (var i=0; i<len; i++) {        
+                                if (itemName == 'locationCd' && list[i].keyName == '返品先倉庫') {
+                                        defaultLoc = list[i].value;
+                                        continue;
+                                }
+                                select += '<OPTION value="' + list[i].value +'"';
+                                if (list[i].value == value) {
+                                        select += ' SELECTED';
+                                } else if (list[i].value == defaultLoc) {
+                                        select += ' SELECTED';
+                                } else if (attr == ATTR_INPUT_DISABLED) {
+                                        select += ' DISABLED';
+                                }
+                                select += '>' + list[i].keyName + '</OPTION>';
+                        }
+                }
+                select += '</SELECT>';
+        }
+        return select;
+};
+
+var labelStatusGridFormatter = function(cellvalue, options, rowObject) {
+        var attr = '';
+        if (options.colModel.attrName != null) {
+                attr = rowObject.attr[options.colModel.attrName];
+        } else {
+                attr = rowObject.attr[options.colModel.name];
+        }
+
+        if (attr == ATTR_BLANK) {
+                return '';
+        }
+        var statusValue = rowObject.data['soDtlStatusNm'];
+        if ($("#mode").val()==MODE_INQUIRY && rowObject.beforeData != null && rowObject.data[options.colModel.name]!=rowObject.beforeData[options.colModel.name]) {
+                return '<span id="' + options.colModel.name + options.rowId + '" style="color:red">' + statusValue + '</span>';
+        }
+        if (statusValue == null) {
+                return '';
+        } 
+        var value = '';
+        if (rowObject.data[options.colModel.name]!=null) {
+                value = rowObject.data[options.colModel.name];
+        }
+        if ($("#mode").val()==MODE_REFER && options.colModel.returnRef==false) {
+                value = '';
+        } 
+        return '<label>' + statusValue + '</label><label id="' + options.colModel.name + options.rowId + '" style="display:none;">' + value + '</label>';
+}
+
+var labelGridFormatter = function(cellvalue, options, rowObject) {
+        var attr = '';
+        if (options.colModel.attrName != null) {
+                attr = rowObject.attr[options.colModel.attrName];
+        } else {
+                attr = rowObject.attr[options.colModel.name];
+        }
+
+        if (attr == ATTR_BLANK) {
+                return '';
+        }
+        if ($("#mode").val()==MODE_INQUIRY && rowObject.beforeData != null && rowObject.data[options.colModel.name]!=rowObject.beforeData[options.colModel.name]) {
+                return '<span id="' + options.colModel.name + options.rowId + '" style="color:red">' + rowObject.data[options.colModel.name] + '</span>';
+        }
+        
+        var value = '';
+        if (rowObject.data[options.colModel.name]!=null) {
+                value = rowObject.data[options.colModel.name];
+        }
+        if (options.colModel.comma==true) {
+                value = new Number(value).toLocaleString("ja-JP", {maximumFractionDigits:0});
+        }
+        if ($("#mode").val()==MODE_REFER && options.colModel.returnRef==false) {
+                value = '';
+        }
+        return '<label id="' + options.colModel.name + options.rowId + '">' + value + '</label>';
+}
+
+var labelSituationGridFormatter = function(cellvalue, options, rowObject) {
+        var attr = '';
+        if (options.colModel.attrName != null) {
+                attr = rowObject.attr[options.colModel.attrName];
+        } else {
+                attr = rowObject.attr[options.colModel.name];
+        }
+
+        if (attr == ATTR_BLANK) {
+                return '';
+        }
+        if ($("#mode").val()==MODE_INQUIRY && rowObject.beforeData != null && rowObject.data[options.colModel.name]!=rowObject.beforeData[options.colModel.name]) {
+                return '<span id="' + options.colModel.name + options.rowId + '" style="color:red">' + rowObject.data[options.colModel.name] + '</span>';
+        }
+        var value = '';
+        if (rowObject.data[options.colModel.name]!=null) {
+                value = rowObject.data[options.colModel.name];
+        }
+        if (options.colModel.comma==true) {
+                value = new Number(value).toLocaleString("ja-JP", {maximumFractionDigits:0});
+        }
+        if ($("#mode").val()==MODE_REFER && options.colModel.returnRef==false) {
+                value = '';
+        }
+        
+        if (value=='0') {
+                value = '○';
+        } else if (value=='1') {
+                value = 'x';
+        } else if (value=='2') {
+                value = '-';
+        }
+        return '<label id="' + options.colModel.name + options.rowId + '">' + value + '</label>';
+}
+var soUserNoteAndShipcstmAddrFormatter = function(itemName, attr, value, func, list) {
+        var html = '';
+        if (attr == ATTR_BLANK) {
+                return html;
+        } else if (attr == ATTR_DISPLAY_ONLY) {
+                html = labelFormatter(itemName, attr, value, func, list);
+        } else if ($("#"+itemName)[0]) {//値の上書きをしたい場合
+                $("#"+itemName).val(value);        
+                //$('[id='+itemName+']').each(function(){ $(this).val(value); });
+                return '';
+        } else {
+                if (value==null) {
+                        value = '';
+                }
+                html += '<input type="text" id="' + itemName + '" name="' + itemName + '" value="' + value
+                + '" margin-top="0px" style="width: 720px;height:30px; vertical-align:middle; margin-top:5px;"';
+                if (attr == ATTR_INPUT_DISABLED) {
+                        //html += ' disabled="disabled"';
+                }
+                if (func != null && func!='') {
+                        html += ' onchange="' + func + '"';
+                }
+                html += '>';                
+        }
+        return html;
+};
+/******************************************************************************
+* 関数名:     itemCdFormatter
+* 処理内容:   商品セルの様式
+* 作成者:     tatemichia27
+* @param     cellvalue　結果
+* @param     options　選択項目
+* @param     rowObject　行データ
+* @return    なし 
+******************************************************************************/
+var itemCdFormatter = function(cellvalue, options, rowObject) {
+        var html = '';
+        if (rowObject.attr['itemCd']=='0') {
+                return html;
+        }
+        /*else if (rowObject.attr['itemCd']=='1') {
+                var html = labelGridFormatter(cellvalue, options, rowObject);
+                return html;
+        }*/
+        var value = '';
+        var nmValue = '';
+        if (rowObject.data['itemCd']!=null) {
+                value = rowObject.data['itemCd'];
+        }
+        if (rowObject.data['itemNm']!=null) {
+                nmValue = rowObject.data['itemNm'];
+        }
+        html += '<input type="text" id="itemCd' + options.rowId
+                        + '" name="itemCd' + options.rowId + '" value="' + value
+                        + '" style="width: 25%;height:30px;" onchange="onItemCodeChange('+options.rowId+')"'
+        if (rowObject.attr['itemCd']=='1') {
+                html += ' readonly';
+        }
+        html += '/>';
+        if (rowObject.attr['itemLink']=='1') {
+                html += "<img class='imgItemCd' style='cursor:pointer;margin-left:3px;vertical-align:middle;' onclick='onItemCodeSearch("+options.rowId+")' style='vertical-align:middle' src='/scm/resources/img/icon/icon_search_common_min_blue.png'/>";
+        }
+        html += '<label id="itemNm' + options.rowId + '">' + nmValue + '</label>';
+        return html;
+};
+
+var textGridFormatter = function(cellvalue, options, rowObject) {
+        var attr = '';
+        if (options.colModel.attrName != null) {
+                attr = rowObject.attr[options.colModel.attrName];
+        } else {
+                attr = rowObject.attr[options.colModel.name];
+        }
+        var html = '';
+        if (attr == ATTR_BLANK) {
+                return html
+        } else if (attr == ATTR_DISPLAY_ONLY) {
+                html = labelGridFormatter(cellvalue, options, rowObject);
+                return html;
+        }
+        var value = '';
+        if (rowObject.data[options.colModel.name]!=null) {
+                value = rowObject.data[options.colModel.name];
+        }
+        if ($("#mode").val()==MODE_REFER && options.colModel.returnRef==false) {
+                value = '';
+        }
+        html += '<input type="text" id="' + options.colModel.name + options.rowId
+                        + '" name="' + options.colModel.name + options.rowId + '" value="' + value
+                        + '" style="width: 100%;height:30px;"';
+        if (attr == ATTR_INPUT_DISABLED) {
+                //html += ' disabled="disabled"';
+        }
+        html += '/>';
+        return html;
+};
+
+var dropdownGridFormatter = function(cellvalue, options, rowObject) {
+        var attr = '';
+        if (options.colModel.attrName != null) {
+                attr = rowObject.attr[options.colModel.attrName];
+        } else {
+                attr = rowObject.attr[options.colModel.name];
+        }
+
+        if (attr == ATTR_BLANK) {
+                return '';
+        } else if (attr == ATTR_DISPLAY_ONLY) {
+                var html = labelGridFormatter(cellvalue, options, rowObject);
+                return html;
+        } else {
+                var list = null;
+                var select = '<SELECT id="' + options.colModel.name + options.rowId + '" style="width: 100%; height:30px;';
+
+                if (options.colModel.name=="imsiType" || options.colModel.name=="itemAttribute" || options.colModel.name=="storage" || options.colModel.name=="taxLvl") {
+                        list = rowObject.dropDownListMap[options.colModel.name][options.rowId-1];
+                        // 選択可能なIMSIタイプが無い場合、ドロップダウンは非表示        
+                        if (options.colModel.name == "imsiType" && (list == undefined || list.length == 0)) {
+                                select += ' display:none;"';
+                        } else {
+                                select += '"';
+                        }
+                        // 自動導出トリガー
+                        if (options.colModel.name=="imsiType" || options.colModel.name=="itemAttribute") {
+                                select += ' onchange="onItemCodeChange('+options.rowId+')"';
+                        }
+                        select += '>';
+                } else {
+                        if(options.colModel.name=="costCategory") {
+                                select += '" onchange="onItemCodeChange('+options.rowId+')';
+                        }
+                        select += '">';
+                        list = rowObject.dropDownListMap[options.colModel.name];
+                }                        
+                
+                if (attr == ATTR_INPUT_DISABLED) {
+                        //select += ' disabled';
+                }
+
+                if (isNull(list) == false && list != undefined) {
+                        var len = list.length;
+                        for (var i=0; i<len; i++) {
+                                var sel = '<OPTION value="' + list[i].value +'"';
+                                if ($("#mode").val()==MODE_REFER && options.colModel.returnRef==false) {
+                                } else if (list[i].value == rowObject.data[options.colModel.name]) {
+                                        sel += ' SELECTED';
+                                } else if (attr == ATTR_INPUT_DISABLED) {
+                                        if (options.colModel.name == "storage" && i == 0) {
+                                                sel += ' SELECTED';
+                                        }
+                                        sel += ' DISABLED';
+                                }
+                                sel += '>' + list[i].keyName + '</OPTION>';
+                                select += sel;
+                        }
+                }
+                select += '</SELECT>';
+        }
+        return select;
+};
+
+var calendarGridFormatter = function(cellvalue, options, rowObject) {
+        var attr = '';
+        if (options.colModel.attrName != null) {
+                attr = rowObject.attr[options.colModel.attrName];
+        } else {
+                attr = rowObject.attr[options.colModel.name];
+        }
+
+        if (attr == ATTR_BLANK) {
+                return '';
+        } else if (attr == ATTR_DISPLAY_ONLY) {
+                var html = labelGridFormatter(cellvalue, options, rowObject);
+                return html;
+        } else {
+                $("#"+options.colModel.name).datepicker({
+                        buttonImage:"resources/css/arktheme/img/icon-calendar.svg",
+                        buttonImageOnly:false,
+                        showOn:"both"
+                });
+                var value = '';
+                if (rowObject.data[options.colModel.name]!=null) {
+                        value = rowObject.data[options.colModel.name];
+                }
+                if ($("#mode").val()==MODE_REFER && options.colModel.returnRef==false) {
+                        value = '';
+                }
+                var html = '<input style="width:80%; height:30px; vertical-align:middle; margin-top:5px; block:inline;" type="text" id="' + options.colModel.name + options.rowId + '" placeholder="YYYY/MM/DD" value="' + value + '"/>';
+                return html;
+        }
+};
+
+var buttonFormatter = function(cellvalue, options, rowObject) {
+        return '<button type="button" class="js-delete-btn" style="min-width:auto;height:auto;background-color:#0492CF;color:#ffffff;border: 1px solid #0492CF;font-size:14px;">削除</button>';
+}
+
+/*var glDtlItemNames = [{itemName:"soslipdtlno",formatter:labelFormatter},
+                      {itemName:"itemcd",formatter:textFormatter, onchange:""},
+                      {itemName:"itemnm",formatter:labelFormatter},
+                      {itemName:"qty",formatter:textFormatter},
+                      {itemName:"deliveryhopedate",formatter:calendarFormatter},
+                      {itemName:"usimtype",formatter:usimTypeListFormatter},
+                      {itemName:"imsitype",formatter:imsiTypeListFormatter},
+                      {itemName:"newreplaceflag",formatter:newReplaceFlagListFormatter},
+                      {itemName:"costcategory",formatter:costCategoryListFormatter},
+                      {itemName:"storage",formatter:storageListFormatter},
+                      {itemName:"itemlvl2nm",formatter:labelFormatter},
+                      {itemName:"itemlvl2cd",formatter:labelFormatter},//属性テーブルにない
+                      {itemName:"shipslipno",formatter:labelFormatter},
+                      {itemName:"shipslipstatus",formatter:labelFormatter},
+                      {itemName:"locationcd",formatter:labelFormatter},
+                      {itemName:"itemnmprice",formatter:labelFormatter},
+                      {itemName:"rejectionreasoncd",formatter:rejectionReasonCdListFormatter},
+                      {itemName:"qtyprice",formatter:labelFormatter},
+                      {itemName:"unitprice",formatter:labelFormatter},
+                      {itemName:"discount1",formatter:textFormatter},
+                      {itemName:"discount2",formatter:textFormatter},
+                      {itemName:"discount3",formatter:textFormatter},
+                      {itemName:"discount4",formatter:textFormatter},
+                      {itemName:"taxlvl",formatter:taxLvlListFormatter},
+                      {itemName:"shipplandate",formatter:labelFormatter},
+                      {itemName:"stockrequireddate",formatter:labelFormatter},
+                      {itemName:"locationcfc",formatter:hiddenFormatter},//属性テーブルにない
+                      {itemName:"locationnm",formatter:hiddenFormatter},//属性テーブルにない
+                      {itemName:"deliverycompanycd",formatter:deliveryCompanyCdListFormatter},
+                      {itemName:"transporttypecd",formatter:transportTypeCdListFormatter},
+                      {itemName:"deliveryhopetimecd",formatter:deliveryHopeCdListFormatter},
+                      {itemName:"shipslipgrpno",formatter:textFormatter},
+                      {itemName:"additionaldeliverydates",formatter:textFormatter},
+                      {itemName:"itemnminvoice",formatter:labelFormatter},
+                      {itemName:"qtyinvoice",formatter:labelFormatter},
+                      {itemName:"customerpodtlno",formatter:textFormatter},
+                      {itemName:"customeritemcd",formatter:labelFormatter},
+                      {itemName:"customeritemnm",formatter:labelFormatter},
+                      {itemName:"outline",formatter:textFormatter},
+                      {itemName:"instorecd",formatter:textFormatter},
+                      {itemName:"soldunitprice",formatter:labelFormatter},
+                      {itemName:"linkagefromslipdtlno",formatter:textFormatter},
+                      {itemName:"contractuserfullname",formatter:textFormatter},
+                      {itemName:"uno",formatter:labelFormatter},
+                      {itemName:"status",formatter:labelFormatter},
+                      {itemName:"stockchksituation",formatter:labelFormatter},
+                      {itemName:"framechksituation",formatter:labelFormatter},
+                      {itemName:"delidatechksituation",formatter:labelFormatter},
+                      {itemName:"otherchksituation",formatter:labelFormatter},
+                      {itemName:"allotsmissnumber",formatter:labelFormatter},
+                      {itemName:"frameallotsmissnumber",formatter:labelFormatter},
+                      {itemName:"frameownercd",formatter:labelFormatter},
+                      {itemName:"poinquiryno",formatter:labelFormatter},
+                      {itemName:"version",formatter:hiddenFormatter}];
+*/
+
+/******************************************************************************
+* 関数名:    なし
+* 処理内容:  受注伝票入力初期表示処理
+* 作成者:    tatemichia27
+* @param     なし
+* @return    なし
+******************************************************************************/
+$(function() {
+        SCM.block();
+        var modeVal = 'FIRST';
+        var slipNoVal = null;
+        if (!isNull($('#paramFormMode').val())) {
+                modeVal = $('#paramFormMode').val()
+        }
+        if (!isNull($('#paramSlipNo').val())) {
+                slipNoVal = $('#paramSlipNo').val()
+        }
+
+        $('#mode').val(modeVal);
+        $('#soSlipNo').val(slipNoVal);
+        registerCallbackFunc();
+        
+        if (!isNull($('#paramSlipNo').val()) && !isNull($('#paramSlipNo').val())) {
+                $("#divMovetypeInit").hide();
+        }
+        
+          ordSpecialTypeSchCallBack = function(specialTypeCd, specialTypeNm, specialWorkFlag, specialWorkNm) {
+                  if(glSpecialCnt == 1){
+                    $('#specialKindCode1').val(specialTypeCd);
+                  }else if(glSpecialCnt == 2){
+                            $('#specialKindCode2').val(specialTypeCd);
+                  }else if(glSpecialCnt == 3){
+                          $('#specialKindCode3').val(specialTypeCd);
+                          }
+                  }
+          
+        Util.ajaxCall($("#").attr('action'), "init", ['mode','soSlipNo'], ['onInitializeFirst(data)'], {
+                serviceComponentId:"initCmpId",
+                blockUI:true
+        });
+});
+
+/*
+function onInitializeFirst(data) {
+
+        //元画面検索条件
+        var saveParamStr = results.saveParameter;
+        if (!isNull(saveParamStr.exclusiveErrorMsg)) {
+                showWarnMsg(saveParamStr.exclusiveErrorMsg, 'err_checkresult');
+        }
+        
+        //TODO セッションから受注伝票番号が来た場合
+        if ($("#soSlipNo").val() == "" || $("#soSlipNo").val() == null) {
+                $("#mode").val("0");                
+                //メーカー返品伝票入力入力初期化
+                Util.ajaxCall($("#").attr('action'), "init", ['mode','soSlipNo'], ['onInitializeMoveType(data)'], {
+                        serviceComponentId:"initCmpId",
+                        blockUI:true
+                });
+        } else {
+                Util.ajaxCall($("#").attr('action'), "init", ['mode', 'soSlipNo'], ['displayInitialInputData(data)'], {
+                        serviceComponentId:"initCmpId",
+                        blockUI:true
+                });
+        }
+}*/
+
+function onInitializeFirst(data) {
+
+        //受注伝票入力移動タイプ初期化
+        var jsonData = JSON.parse(data);
+        var results = jsonData['results'];
+        
+        if (results.serverErrorCd == "1" || results.serverErrorCd == "9") {
+       SCM.unblock();
+       showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+       return;
+        }
+        
+        if (results.mode==MODE_INITIAL) {
+                //初期表示・移動タイプ選択
+                glMoveType = results.moveType;
+                
+                var len = glMoveType.length;
+                for (var i=0; i<len; i++) {
+                        console.log(glMoveType[i]);
+                        $('#moveTypeSel').append($('<option>').html(glMoveType[i]['keyName']).val(glMoveType[i]['value']));
+                }
+            SCM.unblock();
+        } else {
+                //引継ぎ表示の場合
+                displayInitialInputData(data);
+        }
+}
+
+function onMoveTypeChange() {
+        //受注伝票入力移動タイプ変更
+        //glAddList = [];
+        //glAddList.push({
+        //                moveType:$("#moveTypeSel").val()
+        //});
+        //var json = JSON.stringify(glAddList);
+        var messages = new Array();
+        if ($('#moveTypeSel').val() == "") {
+                var m = '{0}を選択してください。';
+                var msg = m.replace('{0}', '移動タイプ');
+                messages.push(msg);
+                showWarnMsg(messages, 'errorMsgForMoveType');
+                return;
+        }
+        
+        $('#moveType').val($('#moveTypeSel').val());
+        $('#mode').val(MODE_NEW);
+        $.each(glMoveType, function(index){
+                if (this.value == $('#moveTypeSel').val()) {
+                        $('#hdCostCategoryGrp').val(this.costCategoryGrp);
+                        $('#hdLocationCfc').val(this.locationCfc);
+                        $('#hdMoveTypeName').val(this.keyName);
+                        $('#returnCfc').val(this.returnCfc);
+                        $('#originalStorageType').val(this.prevStorageKind);
+                        $('#moveStorageType').val(this.afterStorageKind);
+                        return false;
+                }
+        });
+        Util.ajaxCall($("#").attr('action'), "init", ['moveType', 'mode', 'hdSoSlipNo', 'hdCostCategoryGrp', 'hdLocationCfc', 'returnCfc', 'originalStorageType', 'moveStorageType'],
+                        ['displayInitialInputData(data)'], {
+                serviceComponentId:"initCmpId",
+                blockUI:true
+        });
+}
+
+function onHistoryChange() {
+        $("#mode").val(MODE_INQUIRY);
+        $("#moveType").val($("#attrMoveType").text());
+        $("#changeHistoryNo").val($("#changeHistory").val());
+        $("#hdSoSlipNo").val($("#soSlipNo").text());
+        Util.ajaxCall($("#").attr('action'), "init", ['moveType', 'mode', 'hdSoSlipNo', 'changeHistoryNo'], ['displayInitialInputData(data)'], {
+                serviceComponentId:"initCmpId",
+                blockUI:true
+        });
+}
+
+function onPoShopCdChange(obj) {
+}
+
+function onOrdcstmCdChange() {
+        // メッセージのクリア
+        clearMsg("ordSoSlipInputErrorMsg");
+        $("#chgmode").val("ORDCSTM");
+        var addList = new Array();
+        addList.push({
+                scmOrdcstmCd:$("#scmOrdcstmCd").val(),
+        });
+
+        // JSONに変換
+        var json = JSON.stringify(addList);
+        $('#hdHdr').val(json);
+
+        Util.ajaxCall($("#").attr('action'), "chgCd", ['hdHdr', 'chgmode'], ['displayCdChgData(data)'], {
+                serviceComponentId:"cdChgCmpId",
+                blockUI:true
+        });        
+        
+}
+
+function displayOrdcstmCdData(data) {
+        var jsonData = JSON.parse(data);
+        var results = jsonData['results'];
+        
+        if (results.serverErrorCd == "1" || results.serverErrorCd == "9") {
+       SCM.unblock();
+       showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+       return;
+        }
+        
+        if (results.soSlipHdrData == null) {
+                return;
+        }
+
+        renderData(glHdrAttrDefinitionMap, results.soSlipHdrData, glControlGroup, null, true);
+        /*$('#ordcstmNm').val(results.soSlipHdrData.ordcstmNm);
+        $('#logiOrdcstmCd').val(results.soSlipHdrData.logiOrdcstmCd);
+        $('#poAreaOfficialNm').val(results.soSlipHdrData.poAreaOfficialNm);
+        $('#depositoryCd').val(results.soSlipHdrData.depositoryCd);
+        $('#depositoryNm').val(results.soSlipHdrData.depositoryNm);
+    $('#scmAgency1stCd').val(results.soSlipHdrData.scmAgency1stCd);
+    ${'#agency1stNm').val(results.soSlipHdrData.agency1stNm);
+    $('#logiAgency1stCd').val(results.soSlipHdrData.logiAgency1stCd);
+    $('#agency1stPostCd1').val(results.soSlipHdrData.agency1stPostCd);
+    ,formatter:postCdFormatter, separated:true, dataSet:true, postCd:true},
+    {itemName:"agency1stAddr",formatter:textFormatter, dataSet:true},*/
+
+}
+
+function onCostCenterChange() {
+        
+}
+
+function onAgency1stCdChange() {
+        $("#chgmode").val("BILLCSTM");
+        var addList = new Array();
+        addList.push({
+                scmAgency1stCd:$("#scmAgency1stCd").val()
+        });
+
+        // JSONに変換
+        var json = JSON.stringify(addList);
+        $('#hdHdr').val(json);
+
+        Util.ajaxCall($("#").attr('action'), "chgCd", ['hdHdr', 'chgmode'], ['displayCdChgData(data)'], {
+                serviceComponentId:"cdChgCmpId",
+                blockUI:true
+        });
+}
+
+function onShipcstmCdChange() {
+        // メッセージのクリア
+        clearMsg("ordSoSlipInputErrorMsg");
+        $("#chgmode").val("SHIPCSTM");
+        var addList = new Array();
+        addList.push({
+                scmOrdcstmCd:$("#scmOrdcstmCd").val(),
+                scmShipcstmCd:$("#scmShipcstmCd").val(),
+        });
+
+        // JSONに変換
+        var json = JSON.stringify(addList);
+        $('#hdHdr').val(json);
+
+        Util.ajaxCall($("#").attr('action'), "chgCd", ['hdHdr', 'chgmode'], ['displayCdChgData(data)'], {
+                serviceComponentId:"cdChgCmpId",
+                blockUI:true
+        });        
+}
+
+function displayCdChgData(data) {
+        var jsonData = JSON.parse(data);
+        var results = jsonData['results'];
+        
+        if (results.serverErrorCd == "1" || results.serverErrorCd == "9") {
+       SCM.unblock();
+       showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+       return;
+        }
+        
+        console.log(results);
+        
+        if (results.soSlipHdrData == null) {
+                return;
+        }
+        renderData(glHdrAttrDefinitionMap, results.soSlipHdrData, glControlGroup, null, true);
+        //$("#shipcstmNm").val(results.soSlipHdrData.shipcstmNm);
+        //$("#scmShipcstmCd").val(results.soSlipHdrData.scmShipcstmCd);
+        //$("#logiShipcstmCd").val(results.soSlipHdrData.logiShipcstmCd);
+        //$("#shipcstmPostCd").val(results.soSlipHdrData.shipcstmPostCd);
+        //$("#shipcstmTelNo").val(results.soSlipHdrData.shipcstmTelNo);
+        //$("#shipcstmAddr").val(results.soSlipHdrData.shipcstmAddr);
+}
+
+function onSpecialKindCodeChange() {
+        // メッセージのクリア
+        clearMsg("ordSoSlipInputErrorMsg");
+        $("#chgmode").val("SPECIAL");
+        var addList = new Array();
+        addList.push({
+                specialKindCode1:$("#specialKindCode1").val(),
+                specialKindCode2:$("#specialKindCode2").val(),
+                specialKindCode3:$("#specialKindCode3").val(),
+        });
+
+        // JSONに変換
+        var json = JSON.stringify(addList);
+        $('#hdHdr').val(json);
+
+        Util.ajaxCall($("#").attr('action'), "chgCd", ['hdHdr', 'chgmode'], ['displaySpecialKindCodeData(data)'], {
+                serviceComponentId:"cdChgCmpId",
+                blockUI:true
+        });                
+}
+
+function displaySpecialKindCodeData(data) {
+        var jsonData = JSON.parse(data);
+        var results = jsonData['results'];
+        
+        if (results.serverErrorCd == "1" || results.serverErrorCd == "9") {
+       SCM.unblock();
+       showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg')
+       return;
+        }
+        
+        if (results.soSlipHdrData == null) {
+                return;
+        }
+        if (results.soSlipHdrData.specialKindCode1Nm != null) {
+                $("#specialKindCode1Nm").text(results.soSlipHdrData.specialKindCode1Nm);                
+        }
+        if (results.soSlipHdrData.specialKindCode2Nm != null) {
+                $("#specialKindCode2Nm").text(results.soSlipHdrData.specialKindCode2Nm);
+        }
+        if (results.soSlipHdrData.specialKindCode3Nm != null) {
+                $("#specialKindCode3Nm").text(results.soSlipHdrData.specialKindCode3Nm);
+        }
+}
+
+function displayInitialInputData(data) {
+        var jsonData = JSON.parse(data);
+        var results = jsonData['results'];
+        
+        console.log(results);
+        if (results.serverErrorCd == "1" || results.serverErrorCd == "9") {
+       SCM.unblock();
+       showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+       return;
+        }
+        
+        $("#divMovetypeInit").hide();
+        
+    $('#mode').val(results.mode);
+
+    //ドロップダウンリストの初期化
+        glChgHistoryList = results.chgHistoryList;
+        glMoveTypeList = results.moveType;
+        glExpensesShipReasonCdList = results.costReasonMap;
+        glRtnReasonCdList = results.rtnReasonMap;
+        glLocationCdList = results.warehouseMap;
+        glDepositoryCdList =results.depoMap;
+        glCodCfcList = results.codCfcMap;
+        glPersonalCorpCfcList = results.personalMap;
+        glPaymentList = results.paymentMap;
+        glShipdayCondList = results.shipCondMap;
+        glTransferVoteFlagList = results.forwardableMap;
+
+        glDropDownListMap["itemAttribute"] = [];//results.USIMTypeMap;
+        glDropDownListMap["imsiType"] = [];//results.IMSITypeMap;
+        glDropDownListMap["contractCfc"] = results.newReplaceMap;
+        glDropDownListMap["costCategory"] = results.costCategory;
+        glDropDownListMap["storage"] = [];//results.storageMap;
+    glDropDownListMap["rejectionReasonCd"] = results.rejectReasonMap;
+    glDropDownListMap["taxLvl"] = [];//results.taxKindMap;
+    glDropDownListMap["deliveryWarehouse"] = results.deliveryWarehouseMap;
+    glDropDownListMap["deliveryCompanyCd"] = results.deliveryCompanyMap;
+    glDropDownListMap["transportTypeCd"] = results.shipmentMap;
+    glDropDownListMap["deliveryHopeTimeCd"] = results.deliveryDateMap;
+    glDropDownListMap["locationCd"] = results.warehouseMap;
+    if (results.soSlipDtlData != null) {
+            for (var i=0; i<results.soSlipDtlData.length; i++) {
+                glDropDownListMap["itemAttribute"][i] = results.soSlipDtlData[i].usimTypeMap;            
+                glDropDownListMap["imsiType"][i] = results.soSlipDtlData[i].imsiTypeMap;            
+                glDropDownListMap["storage"][i] = results.soSlipDtlData[i].storageMap;            
+                glDropDownListMap["taxLvl"][i] = results.soSlipDtlData[i].taxKindMap;            
+            }
+    }
+        console.log(glDropDownListMap["itemAttribute"]);
+        console.log(glDropDownListMap["imsiType"]);
+        console.log(glDropDownListMap["storage"]);
+        console.log(glDropDownListMap["taxLvl"]);
+        
+        //属性マップ取得
+        glHdrAttrDefinitionMap = results.soSlipHdrAttr;
+        glDtlAttrDefinitionMap = results.soSlipDtlAttr;
+        
+    if (results.soSlipHdrData != null) {
+            $('#hdSoSlipNo').val(results.soSlipHdrData.soSlipNo);
+    }
+        $('#detailLineLimit').val(results.detailLineLimit);
+        glControlGroup = results.controlGroup;
+        
+        //Formatterを呼ぶ前にドロップダウンリストデータを取得しておくこと
+        glHdrItemNames = [{itemName:"attrMoveType",formatter:labelFormatter, list:glMoveTypeList, appendTo:"divattrMoveType", dataSet:true, internal:true},
+                                    {itemName:"attrMoveTypeNm",formatter:labelFormatter, appendTo:"divattrMoveType"},
+                              {itemName:"changeHistory",formatter:dropDownFormatter, list:glChgHistoryList, func:"onHistoryChange()", noReload:true},
+                              {itemName:"soSlipNo",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"distributionChannelCd",formatter:hiddenFormatter, appendTo:"soSlipNo", dataSet:true, internal:true},
+                              {itemName:"costCategoryGrp",formatter:hiddenFormatter, appendTo:"soSlipNo", dataSet:true, internal:true},
+                              {itemName:"locationCfc",formatter:hiddenFormatter, appendTo:"soSlipNo", dataSet:true, internal:true},
+                              {itemName:"displayItemCtrlClass",formatter:hiddenFormatter, appendTo:"soSlipNo", dataSet:true, internal:true},
+                              {itemName:"scmOrdcstmCd",formatter:textFormatter, func:"onOrdcstmCdChange()", dataSet:true},
+                              {itemName:"ordcstmLink",formatter:linkFormatter, func:"onOrdcstmSearch()", appendTo:"divscmOrdcstmCd"},
+                              {itemName:"ordcstmNm",formatter:textFormatter, appendTo:"divscmOrdcstmCd", dataSet:true},
+                              {itemName:"logiOrdcstmCd",formatter:hiddenFormatter, appendTo:"divscmOrdcstmCd", dataSet:true},
+                              {itemName:"soAreaCd",formatter:labelFormatter, appendTo:"divsoAreaCd", dataSet:true, internal:true},
+                              {itemName:"soAreaOfficialNm",formatter:labelFormatter, appendTo:"divsoAreaCd"},
+                              {itemName:"version",formatter:hiddenFormatter, appendTo:"divsoAreaCd", dataSet:true, internal:true, returnRef:false},
+                              {itemName:"poDate",formatter:textFormatter, datepicker:true, dataSet:true, returnRef:false},
+                              {itemName:"soStatusNm",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"soStatus",formatter:hiddenFormatter, appendTo:"divsoStatusNm", dataSet:true, returnRef:false},
+                              {itemName:"stockChkSituation",formatter:labelSituationFormatter, dataSet:true, returnRef:false},
+                              {itemName:"frameChkSituation",formatter:labelSituationFormatter, dataSet:true, returnRef:false},
+                              {itemName:"deliDateChkSituation",formatter:labelSituationFormatter, dataSet:true, returnRef:false},
+                              {itemName:"creditChkSituation",formatter:labelSituationFormatter, dataSet:true, returnRef:false},
+                              {itemName:"otherChkSituation",formatter:labelSituationFormatter, dataSet:true, returnRef:false},
+                              {itemName:"creditExcessSoPermitFlag",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"creditExcessSoPermitUser",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"creditExcessSoPermitDate",formatter:labelFormatter, datepicker:true, dataSet:true, returnRef:false},
+                              {itemName:"permitNote",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"slipTotalAmtExtax",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"creditBalance",formatter:labelFormatter, returnRef:false},
+                              {itemName:"soUserNote",formatter:soUserNoteAndShipcstmAddrFormatter, dataSet:true, returnRef:false},
+                              {itemName:"refSoSlipNo",formatter:labelFormatter, dataSet:true},
+                              {itemName:"fromIntegrationNo",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"systemCd",formatter:hiddenFormatter, appendTo:"divfromIntegrationNo", dataSet:true, returnRef:false},
+                              {itemName:"orderNo",formatter:labelFormatter, dataSet:true},
+                              {itemName:"linkageFromSlipNo",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"slipCreateDate",formatter:labelFormatter, datepicker:true, dataSet:true, returnRef:false},
+                              {itemName:"slipCreateUserNm",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"slipUpdateDate",formatter:labelFormatter, datepicker:true, dataSet:true, returnRef:false},
+                              {itemName:"slipUpdateUserNm",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"expensesShipReasonCd",formatter:dropDownFormatter, list:glExpensesShipReasonCdList, dataSet:true},
+                              {itemName:"costCenterCd",formatter:textFormatter, func:"onCostCenterChange()", dataSet:true},
+                              {itemName:"costCenterLink",formatter:linkFormatter, func:"onProfitCenterSearch()", appendTo:"divcostCenterCd"},
+                              {itemName:"costCenterNm",formatter:labelFormatter, appendTo:"divcostCenterCd", dataSet:true},
+                              {itemName:"budgetNo",formatter:textFormatter, dataSet:true},
+                              {itemName:"returnWorkPlanDate",formatter:calendarFormatter, datepicker:true, dataSet:true, returnRef:false},
+                              {itemName:"returnReceptionDate",formatter:calendarFormatter, datepicker:true, dataSet:true, returnRef:false},
+                              {itemName:"returnReceptionNo",formatter:textFormatter, dataSet:true, returnRef:false},
+                              {itemName:"returnReasonCd",formatter:dropDownFormatter, list:glRtnReasonCdList, dataSet:true, returnRef:false},
+                              {itemName:"returnReasonNm",formatter:hiddenFormatter, appendTo:"divreturnReasonCd", dataSet:true, returnRef:false},
+                              {itemName:"returnSection",formatter:textFormatter, dataSet:true, returnRef:false},
+                              {itemName:"returnUser",formatter:textFormatter, dataSet:true, returnRef:false},
+                              {itemName:"returnTelNo",formatter:textFormatter, dataSet:true, returnRef:false},
+                              {itemName:"locationCd",formatter:dropDownFormatter, list:glLocationCdList, dataSet:true, returnRef:false},
+                              {itemName:"depositoryCd",formatter:dropDownFormatter, list:glDepositoryCdList, dataSet:true, returnRef:false},
+                              {itemName:"depositoryNm",formatter:hiddenFormatter, appendTo:"divdepositoryCd", dataSet:true, returnRef:false},
+                              {itemName:"recordedDate",formatter:calendarFormatter, datepicker:true, dataSet:true, returnRef:false},
+                              {itemName:"scmAgency1stCd",formatter:textFormatter, func:"onAgency1stCdChange()", dataSet:true, onYm:false},
+                              {itemName:"scmAgency1stLink",formatter:linkFormatter, func:"onAgency1stSearch()", appendTo:"divscmAgency1stCd", onYm:false},//属性定義マスタにない
+                              {itemName:"agency1stNm",formatter:textFormatter, appendTo:"divscmAgency1stCd", dataSet:true, onYm:false},
+                              {itemName:"logiAgency1stCd",formatter:hiddenFormatter, appendTo:"divscmAgency1stCd", dataSet:true},
+                              {itemName:"payment",formatter:dropDownFormatter, list:glPaymentList, appendTo:"divscmAgency1stCd", onYm:true},
+                              {itemName:"agency1stPostCd",formatter:postCdFormatter, separated:true, dataSet:true, postCd:true},
+                              {itemName:"agency1stAddr",formatter:textFormatter, dataSet:true},
+                              {itemName:"codCfc",formatter:dropDownFormatter, list:glCodCfcList, dataSet:true},
+                              {itemName:"codBillAmtIntax",formatter:textFormatter, dataSet:true},
+                              {itemName:"expenseExtax",formatter:textFormatter, dataSet:true},
+                              {itemName:"trnsMesrTaxRateDate",formatter:calendarFormatter, datepicker:true, dataSet:true},
+                              {itemName:"tPointDiscountAmt",formatter:textFormatter, dataSet:true},
+                              {itemName:"pointDiscountAmt",formatter:textFormatter, dataSet:true},
+                              {itemName:"poSlipNo",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"poCfc",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"poDate", suffix:"1", formatter:labelFormatter, appendTo:"divPoDate2", datepicker:true, dataSet:true, returnRef:false},
+                              {itemName:"poUser",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"poUserNote",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"scmShipcstmCd",formatter:textFormatter, func:"onShipcstmCdChange()", dataSet:true},
+                              {itemName:"shipcstmLink",formatter:linkFormatter, func:"onShipcstmSearch()", appendTo:"divscmShipcstmCd"},
+                              {itemName:"shipcstmNm",formatter:textFormatter, appendTo:"divscmShipcstmCd", dataSet:true},
+                              {itemName:"logiShipcstmCd",formatter:hiddenFormatter, form:"divscmShipcstmCd", dataSet:true},
+                              {itemName:"poAreaOfficialNm",formatter:labelFormatter, dataSet:true},
+                              {itemName:"shipPhonetic",formatter:textFormatter, dataSet:true},
+                              {itemName:"shipcstmPostCd",formatter:postCdFormatter, separated:true, dataSet:true, postCd:true},
+                              {itemName:"shipcstmTelNo",formatter:textFormatter, dataSet:true},
+                              {itemName:"shipcstmAddr",formatter:soUserNoteAndShipcstmAddrFormatter, dataSet:true},
+                              {itemName:"personalCorpCfc",formatter:dropDownFormatter, list:glPersonalCorpCfcList, dataSet:true},
+                              {itemName:"iniDeliveryHopeDate",formatter:calendarFormatter, datepicker:true, dataSet:true, returnRef:false},
+                              {itemName:"shipDayCond",formatter:dropDownFormatter, list:glShipdayCondList, dataSet:true, returnRef:false},
+                              {itemName:"transferVoteFlag",formatter:dropDownFormatter, list:glTransferVoteFlagList, dataSet:true, returnRef:false},
+                              {itemName:"atpSentFlag",formatter:labelFormatter, dataSet:true, returnRef:false},
+                              {itemName:"speialWorkText",formatter:textFormatter, dataSet:true, returnRef:false},
+                              {itemName:"specialKindCode1",formatter:textFormatter, func:"onSpecialKindCodeChange(this)", dataSet:true, returnRef:false},
+                              {itemName:"specialKindCode1Link",formatter:linkFormatter, func:"onSpecialTypeCd1Search()", appendTo:"divspecialKindCode1"},
+                              {itemName:"specialKindCode1Nm",formatter:labelFormatter, appendTo:"divspecialKindCode1", dataSet:true, returnRef:false},
+                              {itemName:"specialKindCode2",formatter:textFormatter, func:"onSpecialKindCodeChange(this)", dataSet:true, returnRef:false},
+                              {itemName:"specialKindCode2link",formatter:linkFormatter, func:"onSpecialTypeCd2Search()", appendTo:"divspecialKindCode2"},
+                              {itemName:"specialKindCode2Nm",formatter:labelFormatter, appendTo:"divspecialKindCode2", dataSet:true, returnRef:false},
+                              {itemName:"specialKindCode3",formatter:textFormatter, func:"onSpecialKindCodeChange(this)", dataSet:true, returnRef:false},
+                              {itemName:"specialKindCode3link",formatter:linkFormatter, func:"onSpecialTypeCd3Search()", appendTo:"divspecialKindCode3"},
+                              {itemName:"specialKindCode3Nm",formatter:labelFormatter, appendTo:"divspecialKindCode3", dataSet:true, returnRef:false},
+                              {itemName:"massDeliveryFlag",formatter:chkboxFormatter, dataSet:true, returnRef:false},
+                              {itemName:"arrvlShipWorkFlag",formatter:chkboxFormatter, dataSet:true, returnRef:false},
+                              {itemName:"customerPoNo",formatter:textFormatter, dataSet:true},
+                              {itemName:"poShopCd",formatter:textFormatter, func:"onPoShopCdChange()", dataSet:true, returnRef:false},
+                              {itemName:"poShopLink",formatter:linkFormatter, func:"onOrdcstmSearch()", appendTo:"divpoShopCd"},
+                              {itemName:"poShopNm",formatter:textFormatter, appendTo:"divpoShopCd", dataSet:true, returnRef:false},
+                              {itemName:"packSlipRemarks",formatter:textFormatter, dataSet:true, returnRef:false},
+                              {itemName:"slipTotalAmtExtaxBeforeDiscount",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"slipDiscountTotalAmt",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"slipTotalAmtExtax", suffix:"1", formatter:labelFormatter, appendTo:"divslipTotalAmtExtax2", comma:true},
+                              {itemName:"pointDiscountAmtItem", suffix:"1", formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"tPointDiscountAmtItem", suffix:"1", formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"slipTaxableTotalAmtExtax",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"slipTaxAmt",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"expenseExtaxDiscounted",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"pointDiscountAmtSalesCharge",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"tPointDiscountAmtSalesCharge",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"expenseTax",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"billingAmtExtax",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"taxAmt",formatter:labelFormatter, dataSet:true, comma:true},
+                              {itemName:"billingAmtIntax",formatter:labelFormatter, dataSet:true, comma:true}];
+        
+        var tmpSoSlipNo = $('#hdSoSlipNo').val();
+        if (tmpSoSlipNo != null && tmpSoSlipNo != '-') {
+                if(results.mode == '4') {
+                        // ヘッダーの倉庫⇒受注伝票明細履歴.ロケーションコード
+                        results.soSlipHdrDataBefore['locationCd'] = results.soSlipDtlDataBefore[0].locationCd;
+                } else {
+                        results.soSlipHdrData['locationCd'] = results.soSlipDtlData[0].locationCd;
+                }
+        }
+        
+        renderData(results.soSlipHdrAttr, results.soSlipHdrData, results.soSlipHdrDataBefore, results.controlGroup, false);
+
+        // 初期値対応
+        // 個人法人区分
+        var tmpValue = results.soSlipHdrData['personalCorpCfc'];
+        if (tmpValue == null) {
+                // 初期値：法人
+                $('#personalCorpCfc').val("1");
+        }
+        // 転送可能
+        tmpValue = results.soSlipHdrData['transferVoteFlag'];
+        if (tmpValue == null) {
+                // 初期値：転送不可
+                $('#transferVoteFlag').val("1");
+        }
+        // 一括納入
+        tmpValue = results.soSlipHdrData['massDeliveryFlag'];
+        if (tmpValue == null) {
+                // 初期値：一括納入（チェックあり）
+                $('#massDeliveryFlag').prop('checked',true);
+        } else {
+                if (tmpValue == 't') {
+                        $('#massDeliveryFlag').prop('checked',true);
+                        $('#massDeliveryFlag').val("on");
+                } else {
+                        $('#massDeliveryFlag').prop('checked',false);
+                        $('#massDeliveryFlag').val("off");
+                }
+        }
+        // 入出荷作業不要
+        tmpValue = results.soSlipHdrData['arrvlShipWorkFlag'];
+        if (tmpValue == null) {
+                // 初期値：必要（チェックなし）
+                $('#arrvlShipWorkFlag').prop('checked',false);
+        } else {
+                if (tmpValue == 't') {
+                        $('#arrvlShipWorkFlag').prop('checked',true);
+                        $('#arrvlShipWorkFlag').val("on");
+                } else {
+                        $('#arrvlShipWorkFlag').prop('checked',false);
+                        $('#arrvlShipWorkFlag').val("off");
+                }
+        }
+        // 代引元着区分
+        tmpValue = results.soSlipHdrData['codCfc'];
+        if (tmpValue == null) {
+                // 初期値：元払
+                $('#codCfc').val('02');
+        }        
+        // 登録日時 日付(yyyy/MM/dd HH:mm)
+        tmpValue = $('#slipCreateDate').text();
+        if (tmpValue != null) {
+                $('#slipCreateDate').text(tmpValue.substr(0,16));
+        }
+        // 更新日時 日付(yyyy/MM/dd HH:mm)
+        tmpValue = $('#slipUpdateDate').text();
+        if (tmpValue != null) {
+                $('#slipUpdateDate').text(tmpValue.substr(0,16));
+        }
+        
+        // 画面初期化イベントバインド
+        //initScreenEventBind();
+        initSummaryGridColumns();
+        initPriceGridColumns();
+        initDeliveryGridColumns();
+        initInvoiceGridColumns();
+        initStatusGridColumns();
+        
+        loadGridData(results.soSlipDtlData, results.soSlipDtlDataBefore, results.soSlipDtlAttr, glDropDownListMap);
+
+        var moveType = $('#attrMoveType').text();
+        var status = results.soSlipHdrData['soStatus'];
+        var disp = $('#displayItemCtrlClass').val();
+                
+        //YMかつ移動タイプが以下で仮登録の場合、支払い方法を表示
+        if (glControlGroup == '2000' && (moveType == 'A02' || moveType == 'C02' || moveType == 'B02' || moveType == 'D02')
+                && (status=='0' || status=='1' || status=='10' ) ) {
+                $('#billingLabel2').show();
+                $('#payment').show();
+                $('#billingLabel1').hide();
+                $('#agency1stNm').hide();
+        } else {
+                $('#billingLabel2').hide();
+                $('#payment').hide();
+                $('#billingLabel1').show();
+                $('#agency1stNm').show();                
+        }
+
+        //アップロード:プリペイドID売上/プリペイドID売上返品でステータス新規～確定待ちの場合表示
+        if ((moveType == 'A10' || moveType == 'C10') && (status == 0 || status == 1)) {
+                $('#soSlipInputHeading6').show();
+                $('#divUploadSection').show();
+                $('#fileDownloadSection').show();        
+        } else {
+                $('#soSlipInputHeading6').hide();
+                $('#divUploadSection').hide();
+                $('#fileDownloadSection').hide();
+        }
+        
+        // 一括クリア、一括追加と商品追加の表示
+        $('#clearAllBtn').hide();
+        $('#massInputBtn').hide();
+        $('#itemAddBtn').hide();
+        if ($("#mode").val() == MODE_NEW && moveType != 'A10' && moveType != 'C10') {
+                $('#clearAllBtn').show();
+                $('#massInputBtn').show();
+                $('#itemAddBtn').show();
+        }
+        
+        var dispArr = ['A01','A02','A03','A04','A05','A06','A07','A08','A09','A11'];
+        //if (status=='6' || status=='7' || $.inArray(disp, dispArr)>=0) {
+        // 一括設定ボタン 出荷指示送信済/出荷済・表示モードが、"照会"非表示
+        if (status=='6' || status=='7' || $("#mode").val() == MODE_INQUIRY) {
+                $('#massSetBtn').hide();
+        }
+    if ($.inArray(moveType, dispArr) < 0) {
+            $('#massSetBtn').hide();
+    }
+        
+        //登録ボタン表示
+        $('#tempRegistBtn1').hide();
+        $('#registBtn1').hide();
+        $('#cancelBtn1').hide();
+        $('#restoreBtn1').hide();
+        $('#divchangeHistory').hide();
+        if (status=='0') {
+                //新規
+                $('#tempRegistBtn1').show();
+        } else if ($("#mode").val()==MODE_INQUIRY) {
+                //照会画面
+                $('#divchangeHistory').show();
+                if (status=='1' || status=='10' || status=='5') {
+                        //確定待ち・エラー・出荷指示送信待ち・分納送信済み
+                        $('#cancelBtn1').show();
+                } else if (status=='8') {//受注取消
+                        $('#restoreBtn1').show();                        
+                }
+        } else if (status=='1' || status=='10' || status=='5') {
+                //確定待ち・エラー・出荷指示送信待ち・分納送信済み
+                $('#tempRegistBtn1').show();
+                $('#registBtn1').show();
+        }
+        
+        //TODO コード導出処理（受注先コード、出荷先コード、商品コード）
+        //onSoCodeChange();
+        //onShipCodeChange();
+        //var rows = results.soSlipDtlData.length;
+        //for (var i=0; i<rows; i++) {
+        //        onItemCodeChange(i);
+        //}
+        
+        //一括設定ポップアップ初期化
+        var warehouse = glDropDownListMap["deliveryWarehouse"];
+    var companyCd = glDropDownListMap["deliveryCompanyCd"];
+    var transport = glDropDownListMap["transportTypeCd"];
+    
+    // 削除ボタンの設定
+    if ($("#mode").val() != MODE_NEW) {
+            // 新規時、表示のみ以降、非表示
+            $('.js-delete-btn').hide();
+    }
+    
+    $('#warehouseSet > option').remove();
+        $('#warehouseSet').append($('<option>').html('変更なし').val('0'));
+    if (warehouse != null) {
+            var len = warehouse.length;
+            $('#warehouseSet').append($('<option>').html('変更なし').val('0'));
+            for (var i=0; i<len; i++) {
+                    $('#warehouseSet').append($('<option>').html(warehouse[i]['keyName']).val(warehouse[i]['value']));
+            }            
+    }
+    $('#warehouseSet').val('0');
+    
+    $('#deliveryCompanyCfcSet > option').remove();
+        $('#deliveryCompanyCfcSet').append($('<option>').html('変更なし').val('0'));
+    if (companyCd != null) {
+            len = companyCd.length;
+            for (var i=0; i<len; i++) {
+                    $('#deliveryCompanyCfcSet').append($('<option>').html(companyCd[i]['keyName']).val(companyCd[i]['value']));
+            }
+    }
+    $('#deliveryCompanyCfcSet').val('0');
+
+    $('#transportCfcSet > option').remove();
+        $('#transportCfcSet').append($('<option>').html('変更なし').val('0'));
+    if (transport != null) {
+            len = transport.length;
+            $('#transportCfcSet').append($('<option>').html('変更なし').val('0'));
+            for (var i=0; i<len; i++) {
+                    $('#transportCfcSet').append($('<option>').html(transport[i]['keyName']).val(transport[i]['value']));
+            }
+    }
+    $('#transportCfcSet').val('0');
+
+        $('#moveType').val($('#attrMoveType').text());
+        $("#divSoSlipInput1").css('opacity', 100);
+    $('#soSlipNoHidden').val($('#soSlipNo').text());
+    $('#noChangeDeliveryDate').prop('checked',true);
+    $('#noChangeAdditionalDelivery').prop('checked',true);
+    
+    if (results.completed==true) {
+            showWarnMsg('受注伝票:'+$('#soSlipNo').text()+' '+glAction+'処理が完了しました。', 'ordSoSlipInputErrorMsg');
+    }
+
+        // BOM構成を展開:プリペイドID売上/プリペイドID売上返品の場合に非表示
+        if (moveType == 'A10' || moveType == 'C10') {
+                $('#extractBom_ark').hide();
+        } else if ($("#mode").val() == MODE_NEW) {
+                // 新規時、非表示
+                $('#extractBom_ark').hide();
+        } else {
+                $('#extractBom_ark').show();
+        }
+        
+        // ヘッダー余白調整
+        for (var i=0;i<6;i++) {
+                $('#tabSoInput1-ark' + i).css('height','');
+        }
+        
+    SCM.unblock();
+}
+
+function renderData(attrs, data, before, controlGroup, overwrite) {
+        //定義に基づいて入力項目を設定
+        var len = glHdrItemNames.length;
+        for (var i=0; i<len; i++) {
+                var item = glHdrItemNames[i];
+                var attr = attrs[item.itemName];
+                if (item.internal==true) {
+                        attr = 5;
+                }
+                var value = '';
+                if (data!=null) {
+                        value = data[item.itemName];
+                        //参照返品引継ぎしない項目
+                        if ($("#mode").val()==MODE_REFER && item.returnRef==false) {
+                                value = '';
+                        }
+                        //一個前の履歴と現在の履歴を比較して異なるものを色づけ
+                        if ($("#mode").val()==MODE_INQUIRY && before!=null) {
+                                beforeValue = before[item.itemName];
+                                if (value != beforeValue) {
+                                        $("#div"+item.itemName).css("color", "red"); 
+                                } else {
+                                        $("#div"+item.itemName).css("color", "black");                                         
+                                }
+                        }
+                        if (attr == ATTR_DISPLAY_ONLY && item.comma == true) {
+                                if (!isNull(value)) {
+                                        value = new Number(value).toLocaleString();
+                                }                                
+                        }
+                }
+                
+                var html = '';
+                if (overwrite==false || (value != null && overwrite==true)) {
+                        // ヘッダー倉庫　登録⇒表示のみ
+                        if (item.itemName == 'locationCd') {
+                                if ($('#' + item.itemName).length == 1) {
+                                        $('#' + item.itemName).remove();
+                                }
+                        }
+                        html = item.formatter(item.itemName, attr, value, item.func, item.list, item.suffix);                        
+                }
+
+                if (item.appendTo == null) {
+                        if (overwrite==false) {
+                                //初回読み込み及び登録後にモードを変える場合
+                                if (item.datepicker != true) {
+                                        $("#"+item.itemName).remove;
+                                }
+                                $("#div"+item.itemName).append(html);
+                        }
+                        $("#div"+item.itemName).css("background-color", "white");                                 
+                        if (attr == ATTR_HIDDEN) {
+                                // ヘッダー項目表示の判断
+                                if (item.itemName == 'expensesShipReasonCd') {
+                                        $('#soSlipInputDiv16').hide();
+                                } else if (item.itemName == 'returnWorkPlanDate') {
+                                        $('#soSlipInputDiv24').hide();                                        
+                                } else if (item.itemName == 'depositoryCd') {
+                                        $('#soSlipInputDiv33').hide();                                
+                                } else if (item.itemName == 'recordedDate') {
+                                        $('#soSlipInputDiv35').hide();
+                                }
+                                $("#div"+item.itemName).hide();
+                        }
+                        if (controlGroup=='1000') {
+                                if (item.onYm == true) {
+                                        $("#"+item.itemName).hide();                                        
+                                } else if (item.onYm == false) {
+                                        $("#"+item.itemName).show();                                                
+                                }
+                        } else if (controlGroup=='2000') {
+                                if (item.onYm == false) {
+                                        $("#"+item.itemName).hide();                                        
+                                } else if (item.onYm == true) {                                                
+                                        $("#"+item.itemName).show();
+                                }                        
+                        }
+                } else {
+                        if (overwrite==false) {
+                                //初回読み込み及び登録後にモードを変える場合
+                                if (item.datepicker != true) {
+                                        $("#"+item.itemName).remove;
+                                }
+                                $("#"+item.appendTo).append(html);
+                        }
+                        $("#div"+item.appendTo).css("background-color", "white");                                 
+                        if (controlGroup=='1000') {
+                                if (item.onYm == true) {
+                                        $("#"+item.itemName).hide();
+                                } else if (item.onYm == false) {
+                                        $("#"+item.itemName).show();                                                
+                                }
+                        } else if (controlGroup=='2000') {
+                                if (item.onYm == false) {
+                                        $("#"+item.itemName).hide();
+                                } else if (item.onYm == true) {                                                
+                                        $("#"+item.itemName).show();
+                                }
+                        }
+                        if (attr == ATTR_HIDDEN) {
+                                //$("#div"+item.appendTo).hide();
+                                $("#"+item.itemName).hide();
+                        }
+                }
+                if (item.datepicker != null && item.datepicker == true) {
+                        $("#"+item.itemName).datepicker({
+                                buttonImage:"resources/css/arktheme/img/icon-calendar.svg",
+                                buttonImageOnly:false,
+                                showOn:"both"
+                        });
+                }
+        }
+}
+/******************************************************************************
+* 関数名:   initScreenEventBind
+* 処理内容: 画面初期化イベントバインド
+* 作成者:   ning.zhu
+* @param     なし
+* @return    なし
+******************************************************************************/
+function initScreenEventBind() {
+        //一括追加ボタン
+        $('#btnAllIns').on('click', function() {
+                // メッセージのクリア
+                clearMsg("ordSoSlipInputErrorMsg");
+
+                // 一括追加popup
+                $.fancybox.open([$('#whiMakerRtnDtlPopupOpen')], {
+                    autoSize: false
+            });
+        });
+}
+
+/******************************************************************************
+* 関数名:   registerCallbackFunc
+* 処理内容: POPUPについて、コールバック関数
+* 作成者:   ning.zhu
+* @param     なし
+* @return    なし
+******************************************************************************/
+function registerCallbackFunc() {
+
+        //原価センタ検索コールバック
+        whiProfitSchCallBack = function(profitCenterCd, profitCenterCdOfficialNm) {
+                $('#costCenterCd').val(profitCenterCd);
+                $('#costCenterNm').text(profitCenterCdOfficialNm);
+        }
+
+        //商品コード検索コールバック
+        whiItemSchCallBack = function (itemCd,itemDisplayNm,logiItemCd,logiMaterialType){
+                $("#itemCd" + glItemCodeRowId).val(itemCd);
+                onItemCodeChange(glItemCodeRowId);
+        };
+}
+
+/******************************************************************************
+* 関数名:    addOneRow
+* 処理内容:  空白行が１行を追加
+* 作成者:    ning.zhu
+* @param    storageList 保管場所リスト
+* @return   なし
+******************************************************************************/
+function addOneRow() {
+        var ids = $("#summaryGrid").jqGrid("getDataIDs");
+        var cnt = 0;
+        if (ids != null && ids.length != 0) {
+                cnt = Math.max.apply(Math,ids);
+        }
+        glRowCount = cnt;
+        
+        var newSummaryRowInfo = {
+                        soSlipDtlNo: glRowCount+1,
+                        itemNm : "",
+                        qty : "",
+                        deliveryHopeDate : "",
+                        itemAttribute : "",
+                        imsiType : "",
+                        contractCfc : "",
+                        costCategory : "",
+                        storage : "",
+                        itemLvl2Nm : "",
+                        shipSlipNo : "",
+                        shipSlipStatus : "",
+                        locationCd : "",
+                        rejectionReasonCd : "",
+                        btnRowDel : "",
+                        attr:glDtlAttrDefinitionMap,
+                        data:{},
+                        dropDownListMap:glDropDownListMap
+        };
+
+        var newPriceRowInfo = {
+                        soSlipDtlNo: glRowCount+1,
+                        itemNm : "",
+                        qty : "",
+                        unitPrice : "",
+                        discount1 : "",
+                        discount2 : "",
+                        discount3 : "",
+                        discount4 : "",
+                        taxLvl : "",
+                        attr:glDtlAttrDefinitionMap,
+                        data:{},
+                        dropDownListMap:glDropDownListMap
+        };
+        
+        var newDeliveryRowInfo = {
+                        soSlipDtlNo: glRowCount+1,
+                        itemNm : "",
+                        qty : "",
+                        deliveryHopeDate : "",
+                        shipPlanDate : "",
+                        stockRequiredDate : "",
+                        locationCd : "",
+                        deliveryCompanyCd : "",
+                        transportTypeCd : "",
+                        deliveryHopeTimeCd: "",
+                        additionalDeliveryDate: "",
+                        shipSlipGrpNo: "",
+                        attr:glDtlAttrDefinitionMap,
+                        data:{},
+                        dropDownListMap:glDropDownListMap
+        };
+        
+        var newInvoiceRowInfo = {
+                        soSlipNo: glRowCount+1,
+                        itemNm : "",
+                        qty : "",
+                        customerPoDtlNo : "",
+                        customerItemCd : "",
+                        customerItemNm : "",
+                        outline : "",
+                        instoreCd: "",
+                        soldUnitPrice: "",
+                        linkageFromSlipDtlNo: "",
+                        contractUserFullname: "",
+                        attr:glDtlAttrDefinitionMap,
+                        data:{},
+                        dropDownListMap:glDropDownListMap
+        };
+
+        var newStatusRowInfo = {
+                        soSlipDtlNo: glRowCount+1,
+                        itemNm : "",
+                        qty : "",
+                        upperSoSlipDtlNo : "",
+                        soDtlStatus : "",
+                        stockChkSituation : "",
+                        frameChkSituation : "",
+                        deliDateChkSituation : "",
+                        otherChkSituation : "",
+                        allotsMissNumber : "",
+                        frameAllotsMissNumber : "",
+                        frameOwnerCd : "",
+                        poInquiryNo : "",
+                        attr:glDtlAttrDefinitionMap,
+                        data:{},
+                        dropDownListMap:glDropDownListMap
+        };        
+                
+        $("#summaryGrid").jqGrid("addRowData", cnt + 1, newSummaryRowInfo);
+        // 納入予定日カレンダー
+        var tmpColNm = glSummaryGridModel[3].index;
+        var tmpFlg = glSummaryGridModel[3].datepicker;
+        if (glDtlAttrDefinitionMap[tmpColNm] == ATTR_INPUT && tmpFlg == true) {
+                $("#" + tmpColNm + (glRowCount+1)).datepicker({
+                        buttonImage:"resources/css/arktheme/img/icon-calendar.svg",
+                        buttonImageOnly:false,
+                        showOn:"both"
+                });
+        }
+        $('#summaryGrid .ui-datepicker-trigger').hide();
+        
+        $("#priceGrid").jqGrid("addRowData", cnt + 1, newPriceRowInfo);
+        
+        $("#deliveryGrid").jqGrid("addRowData", cnt + 1, newDeliveryRowInfo);
+        // 在庫所要日カレンダー
+        tmpColNm = glDeliveryGridModel[5].index;
+        tmpFlg = glDeliveryGridModel[5].datepicker;
+        if (glDtlAttrDefinitionMap[tmpColNm] == ATTR_INPUT && tmpFlg == true) {
+                $("#" + tmpColNm + (glRowCount+1)).datepicker({
+                        buttonImage:"resources/css/arktheme/img/icon-calendar.svg",
+                        buttonImageOnly:false,
+                        showOn:"both"
+                });
+        }
+        $('#deliveryGrid .ui-datepicker-trigger').hide();
+        
+        $("#invoiceGrid").jqGrid("addRowData", cnt + 1, newInvoiceRowInfo);
+        $("#statusGrid").jqGrid("addRowData", cnt + 1, newStatusRowInfo);
+}
+
+function changeStatus(statusRows) {
+        for (var i=0; i<statusRows.length; i++) {
+                if (statusRows[i]=="1") {//確定待ち        
+                        $("[id="+(i+1)+"]").each(function(){ $(this).find("td").css("background-color", "white"); });
+                } else if (statusRows[i]=="10") {//エラー
+                        $("[id="+(i+1)+"]").each(function(){ $(this).find("td").css("background-color", "lightpink"); });
+                } else if (statusRows[i]=="5") {//出荷指示送信待ち
+                        $("[id="+(i+1)+"]").each(function(){ $(this).find("td").css("background-color", "white"); });
+                } else if (statusRows[i]=="6") {//出荷指示送信済み
+                        $("[id="+(i+1)+"]").each(function(){ $(this).find("td").css("background-color", "#CCFFCC"); });
+                        $("#rejectionReasonCd"+(i+1)).hide();
+                        switchInputEnabled(false, i+1, false, false);
+                } else if (statusRows[i]=="7") {//出荷済み
+                        $("[id="+(i+1)+"]").each(function(){ $(this).find("td").css("background-color", "#CCFFCC"); });
+                        $("#rejectionReasonCd"+(i+1)).hide();
+                        switchInputEnabled(false, i+1, false, false);
+                } else if (statusRows[i]=="8") {//取消済み
+                        $("[id="+(i+1)+"]").each(function(){ $(this).find("td").css("background-color", "white"); });
+                        switchInputEnabled(false, i+1, true, false);
+                } else {
+                        $("[id="+(i+1)+"]").each(function(){ $(this).find("td").css("background-color", "white"); });
+                }
+        }
+}
+
+function logiUserDisplay(){
+        if (glLogiUser) {
+                $('#deliveryGrid').jqGrid('showCol', 'shipSlipGrpNo');
+        }
+}
+
+function hideColumns(gridName, gridModels, attrMap) {
+        $.each(gridModels, function(index){
+                if (attrMap[this.name]=='5' || this.hidden==true) {
+                        $('#'+gridName).jqGrid('hideCol', this.name);                        
+                } else {
+                        $('#'+gridName).jqGrid('showCol', this.name);        
+                }
+        });
+}
+
+/******************************************************************************
+* 関数名:    loadGridData
+* 処理内容:  初期表示
+* 作成者:    
+* @param　　　 dataList データリスト
+* @return   なし
+******************************************************************************/
+function loadGridData(dataList, beforeDataList, attrMap, vdropdownListMap){
+        
+        //グリッドのクリア
+        $("#summaryGrid").clearGridData();
+        $("#priceGrid").clearGridData();
+        $("#deliveryGrid").clearGridData();
+        $("#invoiceGrid").clearGridData();
+        $("#statusGrid").clearGridData();
+
+        //上限数取得
+        var detailLineLimit = $("#detailLineLimit").val();
+        
+        var summaryGridParam = {
+                datatype: "local",
+                colNames: glSummaryGridName,
+                colModel: glSummaryGridModel,
+                height: 280,
+                width: 980,
+                shrinkToFit: false,
+                multiselect: false,
+                regional: 'ja',
+                rowList: [20, 50, 100],
+                rowNum: 10,//detailLineLimit,
+                page: 1,
+                pager: "summaryGridPager",
+                hoverrows : false,
+                scrollOffset :18,
+                scrollrows: true,
+                gridComplete : function () {
+                        initGridEventBind();
+                }
+        };
+
+        var priceGridParam = {
+                        datatype: "local",
+                        colNames: glPriceGridName,
+                        colModel: glPriceGridModel,
+                        height: 280,
+                        width: 980,
+                        shrinkToFit: false,
+                        multiselect: false,
+                        regional: 'ja',
+                        rowList: [20, 50, 100],
+                        rowNum: 10,//detailLineLimit,
+                        page: 1,
+                        pager: "priceGridPager",
+                        hoverrows : false,
+                        scrollOffset :18,
+                        scrollrows: true,
+                        gridComplete : function () {
+                                initGridEventBind();
+                        }
+        };
+
+        var deliveryGridParam = {
+                        datatype: "local",
+                        colNames: glDeliveryGridName,
+                        colModel: glDeliveryGridModel,
+                        height: 280,
+                        width: 980,
+                        shrinkToFit: false,
+                        multiselect: false,
+                        regional: 'ja',
+                        rowList: [20, 50, 100],
+                        rowNum: 10,//detailLineLimit,
+                        page: 1,
+                        pager: "deliveryGridPager",
+                        hoverrows : false,
+                        scrollOffset :18,
+                        scrollrows: true,
+                        gridComplete : function () {
+                                initGridEventBind();
+                                logiUserDisplay();
+                        }
+        };
+
+        var invoiceGridParam = {
+                        datatype: "local",
+                        colNames: glInvoiceGridName,
+                        colModel: glInvoiceGridModel,
+                        height: 280,
+                        width: 980,
+                        shrinkToFit: false,
+                        multiselect: false,
+                        regional: 'ja',
+                        rowList: [20, 50, 100],
+                        rowNum: 10,//detailLineLimit,
+                        page: 1,
+                        pager: "invoiceGridPager",
+                        hoverrows : false,
+                        scrollOffset :18,
+                        scrollrows: true,
+                        gridComplete : function () {
+                                initGridEventBind();
+                        }
+        };
+        
+        var statusGridParam = {
+                        datatype: "local",
+                        colNames: glStatusGridName,
+                        colModel: glStatusGridModel,
+                        height: 280,
+                        width: 980,
+                        shrinkToFit: false,
+                        multiselect: false,
+                        regional: 'ja',
+                        rowList: [20, 50, 100],
+                        rowNum: 10,//detailLineLimit,
+                        page: 1,
+                        pager: "statusGridPager",
+                        hoverrows : false,
+                        scrollOffset :18,
+                        scrollrows: true,
+                        gridComplete : function () {
+                                initGridEventBind();
+                                changeStatus(glStatusRows);
+                        }
+        };
+
+        $("#summaryGrid").jqGrid(summaryGridParam);
+        $("#priceGrid").jqGrid(priceGridParam);
+        $("#deliveryGrid").jqGrid(deliveryGridParam);
+        $("#invoiceGrid").jqGrid(invoiceGridParam);
+        $("#statusGrid").jqGrid(statusGridParam);
+
+        hideColumns('summaryGrid', glSummaryGridModel, attrMap);
+        hideColumns('priceGrid', glPriceGridModel, attrMap);
+        hideColumns('deliveryGrid', glDeliveryGridModel, attrMap);
+        hideColumns('invoiceGrid', glInvoiceGridModel, attrMap);
+        hideColumns('statusGrid', glStatusGridModel, attrMap);
+        
+        glRowCount = 0;
+        glStstusRows = [];
+        glBomRows = [];
+        if (dataList!=null) {
+            $.each(dataList, function(index){
+                    var before = null;
+                    if (beforeDataList!=null) {
+                             before = beforeDataList[index];
+                    }
+                    var currentCnt = $("#summaryGrid").getGridParam('records');
+                           var newRowInfo = {
+                                           detailNo:glRowCount+1,
+                                           data:this,
+                                           beforeData:before, 
+                                           attr:attrMap,
+                                           dropDownListMap: vdropdownListMap
+                           };
+                           glStatusRows[glRowCount] = this.soDtlStatus;
+                           glBomRows[glRowCount] = this.upperSoSlipDtlNo != null;
+                           
+                    $("#summaryGrid").jqGrid("addRowData", currentCnt + 1, newRowInfo);
+                    // 納入予定日カレンダー
+                    var tmpColNm = glSummaryGridModel[3].index;
+                    var tmpFlg = glSummaryGridModel[3].datepicker;
+                    if (glDtlAttrDefinitionMap[tmpColNm] == ATTR_INPUT && tmpFlg == true) {
+                            $("#" + tmpColNm + (glRowCount+1)).datepicker({
+                                    buttonImage:"resources/css/arktheme/img/icon-calendar.svg",
+                                    buttonImageOnly:false,
+                                    showOn:"both"
+                            });
+                    }
+                    $('#summaryGrid .ui-datepicker-trigger').hide();
+                    
+                    $("#priceGrid").jqGrid("addRowData", currentCnt + 1, newRowInfo);
+                    
+                    $("#deliveryGrid").jqGrid("addRowData", currentCnt + 1, newRowInfo);
+                    // 在庫所要日カレンダー
+                    tmpColNm = glDeliveryGridModel[5].index;
+                    tmpFlg = glDeliveryGridModel[5].datepicker;
+                    if (glDtlAttrDefinitionMap[tmpColNm] == ATTR_INPUT && tmpFlg == true) {
+                            $("#" + tmpColNm + (glRowCount+1)).datepicker({
+                                    buttonImage:"resources/css/arktheme/img/icon-calendar.svg",
+                                    buttonImageOnly:false,
+                                    showOn:"both"
+                            });
+                    }
+                    $('#deliveryGrid .ui-datepicker-trigger').hide();
+                    
+                    $("#invoiceGrid").jqGrid("addRowData", currentCnt + 1, newRowInfo);
+                    $("#statusGrid").jqGrid("addRowData", currentCnt + 1, newRowInfo);
+                    if (glBomRows[glRowCount]) {
+                        $("[id="+(glRowCount+1)+"]").each(function(){ $(this).hide(); });
+                    }
+                    glRowCount++;
+            });
+        } else {
+                addOneRow();
+                switchInputEnabled(false, 1, false, true);
+        }
+}
+
+/*******************************************************************************
+ * 関数名:   initGridEventBind
+ * 処理内容: グリッド内の各種ベントを設定
+ * 作成者:   ning.zhu
+ * @param   なし
+ * @return  なし
+ ******************************************************************************/
+function initGridEventBind() {
+        var gridData = $("#cmnInvAdjustMainGrid").getRowData();
+        //$.each(gridData, function() {
+        //        if (this.delFlg) {
+        //                $("#summaryMainGrid").setRowData(this.id, {}, {'display':'none'});
+        //        }
+        //});
+
+        // 明細行の削除ボタン押下
+        $('.js-delete-btn').on('click', function() {
+                var delBtn = $(this);
+                // グリッド行番号取得
+                var rowId = parseInt($(delBtn).closest("tr").attr("id"));
+                $("#summaryGrid").jqGrid("delRowData", rowId);
+                $("#priceGrid").jqGrid("delRowData", rowId);
+                $("#deliveryGrid").jqGrid("delRowData", rowId);
+                $("#invoiceGrid").jqGrid("delRowData", rowId);
+                $("#statusGrid").jqGrid("delRowData", rowId);
+        });
+
+}
+
+function onProfitCenterSearch(rowId) {
+        $.fancybox.open([$('#lightboxProfitCtrSearch')], {
+        autoSize: true
+    });
+};
+
+function onOrdcstmSearch() {
+        isOrdCstmSchMultipleFlg = false;
+        selectOrdCstmSchHiddenArray = new Array();
+        var target = $('#scmOrdcstmCd').val().split(' ', -1);
+        target = $.grep(target, function(e){ return e !== ""; });
+        for (var j = 0; j < target.length; j++) {
+                var initObj = {};
+                initObj.chkdigitAgencyCd = target[j];
+                selectOrdCstmSchHiddenArray.push(initObj);
+        }
+        initOrdCstmSch();
+        $.fancybox.open([$('#ordCstmSchLightbox')], {
+        autoSize: true
+    });
+}
+
+ordCstmSchCallBack = function(array) {
+        var val = "";
+        for (i = 0; i < array.length; i++) {
+                if (val != "") {
+                        val = val + " ";
+                }
+                val = val + array[i].chkdigitAgencyCd;
+        }
+        $("#scmOrdcstmCd").val(val).change();
+}
+
+function onShipcstmSearch() {
+        isShipCstmSchMultipleFlg = false;
+        valueArrayForShipcstm = new Array();
+        var target = $('#scmShipcstmCd').val().split(' ', -1);
+        target = $.grep(target,function(e){ return e != ""; });
+        for (var j = 0; j < target.length; j++) {
+                var initObj = {};
+                initObj.chkdigitShipCstmCd = target[j];
+                valueArrayForShipcstm.push(initObj);
+        }
+        initShipCstmSch();
+        $.fancybox.open([$('#shopsInformationSubLightbox')], {
+        autoSize: true
+    });
+}
+
+shipCstmSchCallBack = function(array) {
+        var val = "";
+        for (i = 0; i < array.length; i++) {
+                if (val != "") {
+                        val = val + " ";
+                }
+                val = val + array[i].chkdigitShipCstmCd;
+        }
+        $("#scmShipcstmCd").val(val).change();
+}
+
+function onAgency1stSearch() {        
+        isAgency1stSchMultipleFlg = false;
+        valueArrayForAgency1st = new Array();
+        var target = $('#scmAgency1stCd').val().split(' ', -1);
+        target = $.grep(target,function(e){ return e != ""; });
+        for (var j = 0; j < target.length; j++) {
+                var initObj = {};
+                initObj.chkdigitAgency1stCd = target[j];
+                valueArrayForAgency1st.push(initObj);
+        }
+        initAgency1stSch();        
+        $.fancybox.open([$('#agency1stSchSubLightbox')], {
+        autoSize: true
+    });
+}
+
+agency1stSchCallBack = function(array) {
+        var val = "";
+        for (i = 0; i < array.length; i++) {
+                if (val != "") {
+                        val = val + " ";
+                }
+                val = val + array[i].chkdigitAgency1stCd;
+        }
+        $("#scmAgency1stCd").val(val).change();
+}
+
+function onAgencySearch() {
+        var ordcstmCds = [];
+        ordcstmCds[0] = $('#poShopCd').val();
+    displayShopSearchOrdcstmInitial('poShopCd', ordcstmCds, false);
+        Util.ajaxCall($("#").attr('action'), "shopSearch", ['poShopCd'], ['onAgencySearchAfter(data)'], {
+                serviceComponentId:"control_ordcstm_search_init",
+                blockUI:true
+        });
+}
+
+function onAgencySearchAfter(data) {
+        displayShopSearchOrdcstmInitialData(data);
+        $.fancybox.open([$('#shopSearchLightbox')], {
+        autoSize: false
+    });
+}
+
+/******************************************************************************
+* 関数名:    onItemCodeSearch
+* 処理内容:  商品コード検索ボタン
+* 作成者:    ning.zhu
+* @param    rowId 行目ID
+* @return   なし
+******************************************************************************/
+function onItemCodeSearch(rowId) {
+        glItemCodeRowId = rowId;
+
+        glItemCode = $("#itemCd" + glItemCodeRowId).val();
+        whiItemSchInit("1,2,3");
+        $.fancybox.open([$('#whiItemSchOpen')], {
+        autoSize: true
+    });
+};
+
+/******************************************************************************
+* 関数名:    onSpecialTypeCdSearch
+* 処理内容:  特殊作業コード検索ボタン
+* 作成者:    dev6905951b7
+* @param    なし
+* @return   なし
+******************************************************************************/
+function onSpecialTypeCd1Search() {
+        glSpecialCnt = 1;
+        var ordcstmCds = [];
+        ordcstmCds[0] = $('#specialKindCode1').val();
+        ordSpecialTypeSchInit("1,2,3");
+        $.fancybox.open([$('#ordSpecialTypeSchOpen')], {
+        autoSize: true
+    });
+}
+
+function onSpecialTypeCd2Search() {
+        glSpecialCnt = 2;
+        var ordcstmCds = [];
+        ordcstmCds[0] = $('#specialKindCode2').val();
+        ordSpecialTypeSchInit("1,2,3");
+        $.fancybox.open([$('#ordSpecialTypeSchOpen')], {
+        autoSize: true
+    });
+}
+
+function onSpecialTypeCd3Search() {
+        glSpecialCnt = 3;
+        var ordcstmCds = [];
+        ordcstmCds[0] = $('#specialKindCode3').val();
+        ordSpecialTypeSchInit("1,2,3");
+        $.fancybox.open([$('#ordSpecialTypeSchOpen')], {
+        autoSize: true
+    });
+}
+
+function ondisplayOrdSpecialTypeSchResult(data) {
+        displayOrdSpecialTypeSchResult(data);
+         
+        };
+
+        
+
+/**
+* 関数名:     searchOrdSpecialTypeAfter
+* <p>処理内容:   特殊作業コード検索画面の呼び出し後処理</p>
+* 作成者:     sbt_jyamasaki　
+* @param      data 特殊作業コード検索画面初期表示データ
+* @return     なし
+* @type       なし
+*/
+function searchOrdSpecialTypeAfter(data) {
+        displayOrdSpecialTypeSchResult(data);
+
+    SCM.unblock();
+}
+
+/**
+ * Nullチェック（Null or 空文字のチェック）。
+ * <p>
+ * 関数名: isNull<br>
+ * 処理内容: Nullチェック（Null or 空文字のチェック）。<br>
+ * 作成者: sbt_ytakagi<br>
+ * </p>
+ * @param data データ
+ * @returns true:Null or 空文字, false:左記以外
+ */
+var isNull = function(data) {
+        // Nullチェック結果
+        var isNullResult = false;
+
+        // 「Null or 空文字」の場合
+        if (data === null || data === '') {
+                isNullResult = true;
+        }
+
+        return isNullResult;
+};
+
+/******************************************************************************
+* 関数名:     createCostCategoryNmOptions
+* 処理内容:   原価カテゴリセルの様式
+* 作成者:     ning.zhu
+* 更新者:     ning.zhu
+* @param     cellvalue　結果
+* @param     options　選択項目
+* @param     rowObject　行データ
+* @return    select セル
+******************************************************************************/
+var createCostCategoryNmOptions = function(cellvalue, options, rowObject) {
+        var select = "";
+        select = '<SELECT class="costCategorySel'
+                + '" id="costCategorySel_' + options.rowId + '" style="width: 100%; height:32px;" onchange="onItemCodeChange('+options.rowId+')">';
+        select += '<OPTION value=""></OPTION>';
+
+        if (isNull(rowObject.costCategoryList) == false && rowObject.costCategoryList != undefined) {
+                $.each(rowObject.costCategoryList, function() {
+                        select += '<OPTION value="' + this.costCategory +'">' + this.costCategoryNm + '</OPTION>';
+                });
+                select += '</SELECT>';
+                return select;
+        }
+
+        return select;
+}
+
+/******************************************************************************
+* 関数名:   isChecked
+* 処理内容: チェックボックスのチェック判断
+* 作成者:   
+* @param   id 項目ID
+* @return  チェック：true 
+*          チェックなし：false
+******************************************************************************/
+var isChecked = function(id) {
+        
+        var result = false;
+    // 項目がチェックの場合
+        if ($(id).prop('checked')) {
+                result = true;
+        }
+    return result;
+};
+
+/******************************************************************************
+* 関数名:   onItemCodeChange
+* 処理内容: 商品コード変更イベント
+* 作成者:   ning.zhu
+* @param   rowId 行目ID
+* @return  なし 
+******************************************************************************/
+function onItemCodeChange(rowId) {
+        // メッセージのクリア
+        clearMsg("ordSoSlipInputErrorMsg");
+        glItemCodeRowId = rowId;
+        imsiTypeIsRequired[glItemCodeRowId] = false;
+        var itemCode = $('#itemCd'+rowId).val();
+        var usimType = $('#itemAttribute'+rowId).val();
+        var imsiType = $('#imsiType'+rowId).val();
+        var costCategory = $('#costCategory'+rowId).val();
+        var locationCd = $('#locationCd'+rowId).val();
+        if (isChecked('#arrvlShipWorkFlag')) {
+                $('#arrvlShipWorkFlag').val("on");
+        } else {
+                $('#arrvlShipWorkFlag').val("off");
+        }
+        changeItemCode(itemCode, usimType, imsiType, costCategory, locationCd);
+}
+
+/******************************************************************************
+* 関数名:   changeMovAvgCost
+* 処理内容: 原価カテゴリ・商品コードにより、移動平均原価を取得
+* 作成者:   ning.zhu
+* @param   itemCode 商品コード
+* @return  なし
+******************************************************************************/
+function changeItemCode(itemCd, usimType, imsiType, costCategory, locationCd) {
+
+        $('#chgmode').val('ITEMCD');
+        $('#hdItemCode').val(itemCd);
+        $('#hdUsimType').val(usimType);
+        $('#hdImsiType').val(imsiType);
+        $('#hdCostCategory').val(costCategory);
+        $('#hdLocationCd').val(locationCd);
+
+        if (itemCd=='') {
+                switchInputEnabled(false, glItemCodeRowId, false, true);
+        } else {
+                Util.ajaxCall($("#").attr('action'), "chgCd",
+                                ['hdItemCode', 'hdUsimType', 'hdImsiType', 'hdCostCategory', 'hdLocationCd', 'hdCostCategoryGrp', 'hdLocationCfc', 'chgmode', 'moveType', 'arrvlShipWorkFlag', 'returnCfc', 'originalStorageType', 'moveStorageType'],
+                                ['onItemCodeChangeCallback(data)'], {
+                        serviceComponentId:"cdChgCmpId",
+                        blockUI:true
+                });        
+        }
+};
+
+function switchInputEnabled(enabled,rowId,rejectEnabled,clearVal) {
+        $('#qty'+rowId).prop('disabled', !enabled);
+        $('#deliveryHopeDate'+rowId).prop('disabled', !enabled);
+        $('#itemAttribute'+rowId).prop('disabled', !enabled);
+        $('#imsiType'+rowId).prop('disabled', !enabled);
+        $('#contractCfc'+rowId).prop('disabled', !enabled);
+        $('#costCategory'+rowId).prop('disabled', !enabled);
+        $('#storage'+rowId).prop('disabled', !enabled);
+        if (rejectEnabled==true) {
+                $('#rejectReasonCd'+rowId).prop('disabled', false);                
+        } else {
+                $('#rejectReasonCd'+rowId).prop('disabled', !enabled);        
+        }
+        $('.js-delete-btn' + rowId).prop('disabled', !enabled);
+        
+        $('#qty'+rowId).prop('disabled', !enabled);
+        $('#taxLvl'+rowId).prop('disabled', !enabled);
+
+        $('#stockRequiredDate'+rowId).prop('disabled', !enabled);
+        $('[id=locationCd' + rowId + ']').prop('disabled', !enabled);
+        $('#deliveryCompanyCd'+rowId).prop('disabled', !enabled);
+        $('#transportTypeCd'+rowId).prop('disabled', !enabled);
+        $('#deliveryHopeTimeCd'+rowId).prop('disabled', !enabled);
+        $('#additionalDeliveryDates'+rowId).prop('disabled', !enabled);
+
+        $('#customerPoDtlNo'+rowId).prop('disabled', !enabled);
+        $('#outline'+rowId).prop('disabled', !enabled);
+        $('#instoreCd'+rowId).prop('disabled', !enabled);
+        $('#linkageFromSlipDtlNo'+rowId).prop('disabled', !enabled);
+        
+        if (clearVal==true) {
+                $('#qty'+rowId).val('');
+                $('#deliveryHopeDate'+rowId).val('');
+                $('#itemAttribute'+rowId).val('');
+                $('#imsiType'+rowId).val('');
+                $('#contractCfc'+rowId).val('');
+                $('#costCategory'+rowId).val('');
+                $('#storage'+rowId).val('');
+                $('#rejectReasonCd'+rowId).val('');                
+                $('#qty'+rowId).val('');
+                $('#taxLvl'+rowId).val('');
+
+                $('#stockRequiredDate'+rowId).val('');
+                $('[id=locationCd' + rowId + ']').val('');
+                $('#deliveryCompanyCd'+rowId).val('');
+                $('#transportTypeCd'+rowId).val('');
+                $('#deliveryHopeTimeCd'+rowId).val('');
+                $('#additionalDeliveryDates'+rowId).val('');
+
+                $('#customerPoDtlNo'+rowId).val('');
+                $('#outline'+rowId).val('');
+                $('#instoreCd'+rowId).val('');
+                $('#linkageFromSlipDtlNo'+rowId).val('');
+        }
+}
+
+/******************************************************************************
+* 関数名:    onItemCodeChangeCallback
+* 処理内容:  商品コードを変更
+* 作成者:    
+* @param    data リターンデータ
+* @return   なし
+******************************************************************************/
+function onItemCodeChangeCallback(data) {
+        // 検索結果を取得
+        var jsondata = JSON.parse(data);
+        var results = jsondata['results'];
+
+        // 警告の場合
+        if(results.serverErrorCd === '1' || results.serverErrorCd === '9') {
+                //商品コード
+                showWarnMsg('明細No.'+glItemCodeRowId+':'+results.serverMessage, 'ordSoSlipInputErrorMsg');
+                return;
+        }
+        
+        if (results.soSlipDtlData != null) {
+                switchInputEnabled(true, glItemCodeRowId, false, false);
+                $("[id=itemNm" + glItemCodeRowId + "]").text(results.soSlipDtlData[0].itemNm);                
+        } else {
+                $("[id=itemNm" + glItemCodeRowId + "]").text("");
+        }
+
+    if (results.soSlipDtlData != null) {
+            glDropDownListMap["itemAttribute"] = [];
+            glDropDownListMap["imsiType"] = [];
+            glDropDownListMap["storage"] = [];
+            glDropDownListMap["taxLvl"] = [];
+            for (var i=0; i<results.soSlipDtlData.length; i++) {
+                    if (results.soSlipDtlData[i].usimTypeMap != null) {
+                            glDropDownListMap["itemAttribute"][i] = results.soSlipDtlData[i].usimTypeMap;   
+                    }
+                    if (results.soSlipDtlData[i].imsiTypeMap != null) {
+                            glDropDownListMap["imsiType"][i] = results.soSlipDtlData[i].imsiTypeMap;   
+                    }
+                    if (results.soSlipDtlData[i].storageMap != null) {
+                            glDropDownListMap["storage"][i] = results.soSlipDtlData[i].storageMap;   
+                    }
+                    if (results.soSlipDtlData[i].taxKindMap != null) {
+                            glDropDownListMap["taxLvl"][i] = results.soSlipDtlData[i].taxKindMap;   
+                    }          
+            }
+    }
+
+        if (glDropDownListMap["itemAttribute"] != null) {
+                var selValue = $("#itemAttribute" + glItemCodeRowId).val();
+                $("#itemAttribute" + glItemCodeRowId).children().remove();
+                var list = glDropDownListMap["itemAttribute"][0];
+                $("#itemAttribute" + glItemCodeRowId).append($('<option>').html('選択してください').val(''));
+                $.each(list, function(index){
+                        $("#itemAttribute" + glItemCodeRowId).append($('<option>').html(this['keyName']).val(this['value']));
+                });
+                $("#itemAttribute" + glItemCodeRowId).val(selValue);
+        }
+
+        if (glDropDownListMap["imsiType"] != null) {
+                if (glDropDownListMap["imsiType"][0] != null) {
+                        imsiTypeIsRequired[glItemCodeRowId] = true;
+                        $("#imsiType" + glItemCodeRowId).show();
+                        var selValue = $("#imsiType" + glItemCodeRowId).val();
+                        $("#imsiType" + glItemCodeRowId).children().remove();                
+                        var list = glDropDownListMap["imsiType"][0];
+                        //$("#imsiType" + glItemCodeRowId).append($('<option>').html('選択してください').val(''));
+                        $.each(list, function(index){
+                                $("#imsiType" + glItemCodeRowId).append($('<option>').html(this['keyName']).val(this['value']));
+                        });
+                        $("#imsiType" + glItemCodeRowId).val(selValue);
+                } else {
+                        $("#imsiType" + glItemCodeRowId).hide();
+                }
+                
+        }
+
+        if (glDropDownListMap["storage"] != null) {
+                var selValue = $("#storage" + glItemCodeRowId).val();
+                $("#storage" + glItemCodeRowId).children().remove();                
+                var list = glDropDownListMap["storage"][0];
+                var existedFlg = false;
+                if (list != null) {
+                        $.each(list, function(index){
+                                if (selValue == this['value']) {
+                                        existedFlg = true;
+                                }
+                                $("#storage" + glItemCodeRowId).append($('<option>').html(this['keyName']).val(this['value']));
+                        });
+                        if (selValue == null || !existedFlg) {
+                                $("#storage" + glItemCodeRowId).prop("selectedIndex", 0);
+                        } else {
+                                $("#storage" + glItemCodeRowId).val(selValue);                        
+                        }
+                }
+        }
+
+        if (glDropDownListMap["taxLvl"] != null) {
+                var selValue = $("#taxLvl" + glItemCodeRowId).val();
+                $("#taxLvl" + glItemCodeRowId).children().remove();                
+                var list = glDropDownListMap["taxLvl"][0];
+                //$("#taxLvl" + glItemCodeRowId).append($('<option>').html('選択してください').val(''));
+                $.each(list, function(index){
+                        $("#taxLvl" + glItemCodeRowId).append($('<option>').html(this['keyName']).val(this['value']));
+                });
+                // 商品に紐づく商品税分類コード
+                var tempTaxLvl = results.soSlipDtlData[0].taxLvl;
+                if (!isNull(tempTaxLvl)) {
+                        selValue = tempTaxLvl;
+                }
+                $("#taxLvl" + glItemCodeRowId).val(selValue);
+        }
+        // 配送会社区分、便種、配達希望時刻の初期値指定
+        $("#deliveryCompanyCd" + glItemCodeRowId).val(null);
+        $("#transportTypeCd" + glItemCodeRowId).val(null);
+        $("#deliveryHopeTimeCd" + glItemCodeRowId).val(null);
+}
+
+var qtyFormatter = function(cellvalue, options, rowObject) {
+        var name = 'Qty';
+        var attr = '';
+        if (options.colModel.attrName != null) {
+                attr = rowObject.attr[options.colModel.attrName];
+        } else {
+                attr = rowObject.attr[options.colModel.name];
+        }
+        var html = '';
+        if (attr == ATTR_BLANK) {
+                return html
+        } else if (attr == ATTR_DISPLAY_ONLY) {
+                html = labelGridFormatter(cellvalue, options, rowObject);
+                return html;
+        }
+        var value = '';
+        if (rowObject.data[options.colModel.name]!=null) {
+                value = rowObject.data[options.colModel.name];
+        }
+        if ($("#mode").val()==MODE_REFER && options.colModel.returnRef==false) {
+                value = '';
+        }
+        html += '<input type="text" id="' + options.colModel.name + options.rowId
+                        + '" name="' + options.colModel.name + options.rowId + '" value="' + value
+                        + '" style="text-align: right; width: 100%;height:30px;"';
+        if (attr == ATTR_INPUT_DISABLED) {
+                //html += ' disabled="disabled"';
+        }
+        html += '/>';
+        return html;
+};
+
+var unitPriceFormatter = function(cellvalue, options, rowObject) {
+        var name = 'UnitPrice';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var discount1Formatter = function(cellvalue, options, rowObject) {
+        var name = 'Discount1';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var discount2Formatter = function(cellvalue, options, rowObject) {
+        var name = 'Discount1';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var discount3Formatter = function(cellvalue, options, rowObject) {
+        var name = 'Discount3';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var discount4Formatter = function(cellvalue, options, rowObject) {
+        var name = 'Discount4';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var stockRequireDateFormatter = function(cellvalue, options, rowObject) {
+        var name = 'StockRequireDate';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var additionalDeliveryDateFormatter = function(cellvalue, options, rowObject) {
+        var name = 'AdditionalDeliveryDate';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var soSlipGrpNoFormatter = function(cellvalue, options, rowObject) {
+        var name = 'SoSlipGrpNo';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var customerOrderDtlNoFormatter = function(cellvalue, options, rowObject) {
+        var name = 'CustomerOrderDtlNo';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var summaryFormatter = function(cellvalue, options, rowObject) {
+        var name = 'Summary';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var instoreCdFormatter = function(cellvalue, options, rowObject) {
+        var name = 'InstoreCd';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var coopSlipDtlNoFormatter = function(cellvalue, options, rowObject) {
+        var name = 'CoopSlipDtlNo';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var contractNmFormatter = function(cellvalue, options, rowObject) {
+        var name = 'ContractNm';
+        var html = '<input type="text" id="input' + name + options.rowId;
+        html += '" name="input' + name + options.rowId + '" style="width: 100%;height:30px;"/>';
+        return html;
+};
+
+var usimTypeFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="usimTypeSel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.usimList) == false && rowObject.usimList != undefined) {
+                $.each(rowObject.usimList, function() {
+                        select += '<OPTION value="' + this.usimType +'">' + this.usimType + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+var imsiTypeFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="imsiTypeSel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.imsiList) == false && rowObject.imsiList != undefined) {
+                $.each(rowObject.imsiList, function() {
+                        select += '<OPTION value="' + this.imsiType +'">' + this.imsiType + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+var storageFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="storageSel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.storageList) == false && rowObject.storageList != undefined) {
+                $.each(rowObject.storageList, function() {
+                        select += '<OPTION value="' + this.storage +'">' + this.storage + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+var newReplaceFlgFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="newReplaceFlgSel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.newReplaceFlgList) == false && rowObject.newReplaceFlgList != undefined) {
+                $.each(rowObject.newReplaceFlgList, function() {
+                        select += '<OPTION value="' + this.newReplaceFlg +'">' + this.newReplaceFlg + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+var denyReasonFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="denyReasonSel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.denyReasonList) == false && rowObject.denyReasonList != undefined) {
+                $.each(rowObject.denyReasonList, function() {
+                        select += '<OPTION value="' + this.denyReason +'">' + this.denyReason + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+var taxCategoryFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="taxCategorySel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.taxCategoryList) == false && rowObject.taxCategoryList != undefined) {
+                $.each(rowObject.taxCategoryList, function() {
+                        select += '<OPTION value="' + this.taxCategory +'">' + this.taxCategory + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+var warehouseFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="warehouseSel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.warehouseList) == false && rowObject.warehouseList != undefined) {
+                $.each(rowObject.warehouseList, function() {
+                        select += '<OPTION value="' + this.warehouse +'">' + this.warehouse + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+var deliveryCompanyFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="deliveryCompanySel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.deliveryCompanyList) == false && rowObject.deliveryCompanyList != undefined) {
+                $.each(rowObject.deliveryCompanyList, function() {
+                        select += '<OPTION value="' + this.deliveryCompany +'">' + this.deliveryCompany + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+var shipmentFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="shipmentSel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.shipmentList) == false && rowObject.shipmentList != undefined) {
+                $.each(rowObject.shipmentList, function() {
+                        select += '<OPTION value="' + this.shipment +'">' + this.shipment + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+var deliveryTimeFormatter = function(cellvalue, options, rowObject) {
+        var select = '<SELECT id="deliveryTimeSel' + options.rowId + '" style="width: 100%; height:32px;">';
+        select += '<OPTION value=""></OPTION>';
+        if (isNull(rowObject.deliveryTimeList) == false && rowObject.deliveryTimeList != undefined) {
+        -        $.each(rowObject.deliveryTimeList, function() {
+                        select += '<OPTION value="' + this.deliveryTime +'">' + this.deliveryTime + '</OPTION>';
+                });
+        }
+        select += '</SELECT>';
+        return select;
+}
+
+/******************************************************************************
+* 関数名:     calendarFormatter
+* 処理内容:   単価列の格式化
+* 作成者:     ning.zhu
+* @param     cellvalue　結果
+* @param     options　選択項目
+* @param     rowObject　行データ
+* @return    なし
+******************************************************************************/
+//var calendarFormatter = function(cellvalue, options, rowObject) {
+//        var html = '<input type="text" id="input' + options.colModel.name + options.rowId;
+//        html += '"name="input' + options.colModel.name + options.rowId + '" style="width: 100%;height:30px;"/>';
+//        return html;
+//};
+
+function requiredLabel(gridModel, gridName) {
+        $.each(gridModel, function(index){
+                if (glDtlAttrDefinitionMap[this.name]==3) {
+                        gridName[index] += '<span style="color:red">*</span>';
+                }
+        });        
+}
+
+function initSummaryGridColumns(){
+        var col1 = {index: 'soSlipDtlNo', name: 'soSlipDtlNo', width: 40, align:'center', resizable: true, sortable:false,hidden:false, formatter:labelGridFormatter, dataSet:true};
+        var col2 = {index: 'itemNm', name: 'itemNm', width: 300, resizable: true, sortable:false,align:'left', hidden:false, formatter:itemCdFormatter, dataSet:true};
+        var col3 = {index: 'qty', name: 'qty', width: 80, align:'right',resizable: true, sortable:false, hidden:false, formatter: qtyFormatter, dataSet:true};
+        var col4 = {index: 'deliveryHopeDate', name: 'deliveryHopeDate', title:false, width: 150, align:'center', resizable: true, sortable:false, hidden:false, formatter:calendarGridFormatter, datepicker:true, dataSet:true, returnRef:false};
+        var col5 = {index: 'itemAttribute', name: 'itemAttribute', width: 100, align:'center',resizable: true, sortable:false, hidden:false, formatter: dropdownGridFormatter, dataSet:true};
+        var col6 = {index: 'imsiType', name: 'imsiType', width: 100, resizable: true, sortable:false,align:'center',hidden:false, formatter: dropdownGridFormatter, dataSet:true};
+        var col7 = {index: 'costCategory', name: 'costCategory', width: 100, resizable: true, sortable:false,align:'center',hidden:false, formatter:dropdownGridFormatter, dataSet:true};
+        var col8 = {index: 'storage', name: 'storage', width: 100, resizable: true, sortable:false,align:'center',hidden:false, formatter:dropdownGridFormatter, dataSet:true, returnRef:false};
+        var col9 = {index: 'contractCfc', name: 'contractCfc', width: 100, resizable: true, sortable:false,align:'center',hidden:false, formatter:dropdownGridFormatter, dataSet:true};
+        var col10 = {index: 'itemLvl2OfficialNm', name: 'itemLvl2OfficialNm', width: 80, resizable: true, sortable:false,align:'center',hidden:false, formatter:labelGridFormatter, dataSet:true};
+        var col11 = {index: 'itemLvl2Id', name: 'itemLvl2Id', width: 80, resizable: true, sortable:false,align:'center',hidden:true, formatter:labelGridFormatter, dataSet:true};
+        var col12 = {index: 'shipSlipNo', name: 'shipSlipNo', width: 80, resizable: true, sortable:false,align:'center',hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col13 = {index: 'shipSlipStatus', name: 'shipSlipStatus', width: 80, resizable: true, sortable:false,align:'center',hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col14 = {index: 'locationCd', name: 'locationCd', width: 80, resizable: true, sortable:false,align:'center',hidden:false, formatter:labelGridFormatter};
+        var col15 = {index: 'rejectionReasonCd', name: 'rejectionReasonCd', width: 100, resizable: true, sortable:false,align:'center',hidden:false, formatter:dropdownGridFormatter, dataSet:true, returnRef:false};
+        var col16 = {index: 'btnRowDel', name: 'btnRowDel', width: 45, resizable: true, sortable:false,align:'center',hidden:false, formatter:buttonFormatter};
+        
+        glSummaryGridName = ['No'
+                    , '商品名'
+                    , '数量'
+                    , '納入予定日'
+                    , 'USIMタイプ'
+                    , 'IMSIタイプ'
+                    , '新規買替フラグ'
+                    , '原価カテゴリ'
+                    , '保管場所'
+                    , '商品中分類'
+                    , '商品中分類コード'
+                    , '出荷伝票番号'
+                    , '出荷ステータス'
+                    , '倉庫'
+                    , '拒否理由'
+                    , '削除'];
+        
+        glSummaryGridModel = [col1, col2, col3, col4, col5, col6, col9, col7, col8, col10, col11, col12, col13, col14, col15, col16];
+        
+        requiredLabel(glSummaryGridModel, glSummaryGridName);
+}
+
+/**
+ * 
+ */
+function initPriceGridColumns(){
+        var col1 = {index: 'soSlipDtlNo', name: 'soSlipDtlNo', width: 40, align:'center', resizable: true, sortable:false,hidden:false, formatter:labelGridFormatter};
+        var col2 = {index: 'itemNm', name: 'itemNm', attrName: 'itemNmPrice', width: 300, resizable: true, sortable:false,align:'left', hidden:false, formatter:labelGridFormatter};
+        var col3 = {index: 'qty', name: 'qty', attrName: 'qtyPrice', width: 80, align:'right',resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter};
+        var col4 = {index: 'unitPrice', name: 'unitPrice', width: 80, align:'right', resizable: true, sortable:false, hidden:false, formatter: textGridFormatter, dataSet:true, comma:true};
+        var col5 = {index: 'discount1', name: 'discount1', width: 80, align:'right',resizable: true, sortable:false, hidden:false, formatter: textGridFormatter, dataSet:true};
+        var col6 = {index: 'discount2', name: 'discount2', width: 80, align:'right',resizable: true, sortable:false, hidden:false, formatter: textGridFormatter, dataSet:true};
+        var col7 = {index: 'discount3', name: 'discount3', width: 80, align:'right',resizable: true, sortable:false, hidden:false, formatter: textGridFormatter, dataSet:true};
+        var col8 = {index: 'discount4', name: 'discount4', width: 80, align:'right',resizable: true, sortable:false, hidden:false, formatter: textGridFormatter, dataSet:true};
+        var col9 = {index: 'taxLvl', name: 'taxLvl', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter: dropdownGridFormatter, dataSet:true};
+        
+        glPriceGridName = ['No'
+                    , '商品名'
+                    , '数量'
+                    , '単価'
+                    , '値引き1'
+                    , '値引き2'
+                    , '値引き3'
+                    , '値引き4'
+                    , '税分類'];
+        
+        glPriceGridModel = [col1, col2, col3, col4, col5, col6, col7, col8, col9];
+
+        requiredLabel(glPriceGridModel, glPriceGridName);
+}
+
+/**
+ * 
+ */
+function initDeliveryGridColumns(){
+        var col1 = {index: 'soSlipDtlNo', name: 'soSlipDtlNo', width: 40, align:'center', resizable: true, sortable:false,hidden:false, formatter:labelGridFormatter};
+        var col2 = {index: 'itemNm', name: 'itemNm', attrName: 'itemNmShip', width: 300, resizable: true, sortable:false,align:'left', hidden:false, formatter:labelGridFormatter};
+        var col3 = {index: 'qty', name: 'qty', attrName: 'qtyShip', width: 80, align:'right',resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter};
+        var col4 = {index: 'deliveryHopeDate', name: 'deliveryHopeDate', title:false, width: 150, align:'center', resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, returnRef:false};
+        var col5 = {index: 'shipPlanDate', name: 'shipPlanDate', title:false, width: 150, align:'center', resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col6 = {index: 'stockRequiredDate', name: 'stockRequiredDate', title:false, width: 150, align:'center', resizable: true, sortable:false, hidden:false, formatter:calendarGridFormatter, datepicker:true, dataSet:true};
+        var col7 = {index: 'locationCd', name: 'locationCd', attrName: 'locationCdShip', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter: dropdownGridFormatter, dataSet:true, returnRef:false};
+        var col8 = {index: 'locationCfc', name: 'locationCfc', width: 80, align:'center',resizable: true, sortable:false, hidden:true, formatter: labelGridFormatter, dataSet:true, returnRef:false};
+        var col9 = {index: 'locationNm', name: 'locationNm', width: 80, align:'center',resizable: true, sortable:false, hidden:true, formatter: labelGridFormatter, returnRef:false};
+        var col10 = {index: 'deliveryCompanyCd', name: 'deliveryCompanyCd', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:dropdownGridFormatter, dataSet:true, returnRef:false};
+        var col11 = {index: 'transportTypeCd', name: 'transportTypeCd', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter: dropdownGridFormatter, dataSet:true, returnRef:false};
+        var col12 = {index: 'deliveryHopeTimeCd', name: 'deliveryHopeTimeCd', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter: dropdownGridFormatter, dataSet:true, returnRef:false};
+        var col13 = {index: 'additionalDeliveryDates', name: 'additionalDeliveryDates', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:textGridFormatter, dataSet:true, returnRef:false};
+        var col14 = {index: 'shipSlipGrpNo', name: 'shipSlipGrpNo', width: 80, align:'center',resizable: true, sortable:false, hidden:true, formatter:textGridFormatter, dataSet:true};
+        
+        glDeliveryGridName = ['No'
+                    , '商品名'
+                    , '数量'
+                    , '納入予定日'
+                    , '出荷予定日'
+                    , '在庫所要日'
+                    , '倉庫'
+                    , 'ロケーション区分'
+                    , 'ロケーション名称'
+                    , '配送会社区分'
+                    , '便種'
+                    , '配達希望<br>時刻'
+                    , '追加配送<br>日数'
+                    , '出荷伝票<br>Grp番号'];
+        
+        glDeliveryGridModel = [col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col14];
+
+        requiredLabel(glDeliveryGridModel, glDeliveryGridName);
+}
+
+/**
+ * 
+ */
+function initInvoiceGridColumns(){
+        var col1 = {index: 'soSlipDtlNo', name: 'soSlipDtlNo', width: 40, align:'center', resizable: true, sortable:false,hidden:false, formatter:labelGridFormatter};
+        var col2 = {index: 'itemNm', name: 'itemNm', attrName: 'itemNmInvoice', width: 300, resizable: true, sortable:false,align:'left', hidden:false, formatter:labelGridFormatter};
+        var col3 = {index: 'qty', name: 'qty', attrName: 'qtyInvoice', width: 80, align:'right',resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter};
+        var col4 = {index: 'customerPoDtlNo', name: 'customerPoDtlNo', title:false, width: 150, align:'center', resizable: true, sortable:false, hidden:false, formatter:textGridFormatter, dataSet:true};
+        var col5 = {index: 'customerItemCd', name: 'customerItemCd', title:false, width: 150, align:'center', resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col6 = {index: 'customerItemNm', name: 'customerItemNm', title:false, width: 150, align:'center', resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col7 = {index: 'outline', name: 'outline', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:textGridFormatter, dataSet:true, returnRef:false};
+        var col8 = {index: 'instoreCd', name: 'instoreCd', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:textGridFormatter, dataSet:true, returnRef:false};
+        var col9 = {index: 'soldUnitPrice', name: 'soldUnitPrice', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col10 = {index: 'linkageFromSlipDtlNo', name: 'linkageFromSlipDtlNo', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:textGridFormatter, dataSet:true};
+        var col11 = {index: 'contractUserFullname', name: 'contractUserFullname', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:textGridFormatter, dataSet:true, returnRef:false};
+        
+        glInvoiceGridName = ['No'
+                    , '商品名'
+                    , '数量'
+                    , 'お客様発注<br>明細番号'
+                    , '客先<br>商品コード'
+                    , '客先商品名称'
+                    , '摘要'
+                    , 'インストアコード'
+                    , 'お客様売上単価'
+                    , '連携元伝票<br>明細番号'
+                    , '契約者名'];
+        
+        glInvoiceGridModel = [col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11];
+
+        requiredLabel(glInvoiceGridModel, glInvoiceGridName);
+}
+
+/**
+ * 
+ */
+function initStatusGridColumns(){
+        var col1 = {index: 'soSlipDtlNo', name: 'soSlipDtlNo', width: 40, align:'center', resizable: true, sortable:false,hidden:false, formatter:labelGridFormatter};
+        var col2 = {index: 'itemNm', name: 'itemNm', width: 300, resizable: true, sortable:false,align:'left', hidden:false, formatter:labelGridFormatter};
+        var col3 = {index: 'qty', name: 'qty', width: 80, align:'right',resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter};
+        var col4 = {index: 'upperSoSlipDtlNo', name: 'upperSoSlipDtlNo', width: 50, align:'center', resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, dataSet:true};
+        var col5 = {index: 'soDtlStatus', name: 'soDtlStatus', width: 150, align:'center', resizable: true, sortable:false, hidden:false, formatter:labelStatusGridFormatter, dataSet:true, returnRef:false};
+        var col6 = {index: 'stockChkSituation', name: 'stockChkSituation', width: 80, align:'center', resizable: true, sortable:false, hidden:false, formatter:labelSituationGridFormatter, dataSet:true, returnRef:false};
+        var col7 = {index: 'frameChkSituation', name: 'frameChkSituation', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:labelSituationGridFormatter, dataSet:true, returnRef:false};
+        var col8 = {index: 'deliDateChkSituation', name: 'deliDateChkSituation', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:labelSituationGridFormatter, dataSet:true, returnRef:false};
+        var col9 = {index: 'otherChkSituation', name: 'otherChkSituation', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:labelSituationGridFormatter, dataSet:true, returnRef:false, returnRef:false};
+        var col10 = {index: 'allotsMissNumber', name: 'allotsMissNumber', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col11 = {index: 'frameAllotsMissNumber', name: 'frameAllotsMissNumber', width: 80, align:'center',resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col12 = {index: 'frameOwnerCd', name: 'frameOwnerCd', width: 150, align:'center',resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col13 = {index: 'poInquiryNo', name: 'poInquiryNo', width: 120, align:'center',resizable: true, sortable:false, hidden:false, formatter:labelGridFormatter, dataSet:true, returnRef:false};
+        var col14 = {index: 'version', name: 'version', width: 120, align:'center',resizable: true, sortable:false, hidden:true, formatter:textGridFormatter, dataSet:true};
+        
+        glStatusGridName = ['No'
+                    , '商品名'
+                    , '数量'
+                    , 'UNo'
+                    , 'ステータス'
+                    , '在庫'
+                    , '枠'
+                    , '納期'
+                    , 'その他'
+                    , '引当<br>失敗数'
+                    , '枠引当<br>失敗数'
+                    , '枠オーナー'
+                    , '問合せ番号'
+                    , 'バージョン'];
+        
+        glStatusGridModel = [col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col14];
+
+        requiredLabel(glStatusGridModel, glStatusGridName);
+}
+
+/******************************************************************************
+* 関数名:    clearHiddenParam
+* 処理内容:  ページのパラメータをクリア
+* 作成者:    ning.zhu
+* @param    なし
+* @return   なし
+******************************************************************************/
+function clearHiddenParam() {
+        //計上日
+        $("#recordDate").val("");
+        //理由
+        $("#reason").val("");
+}
+
+/******************************************************************************
+* 関数名:    displayInitialData
+* 処理内容:  初期表示送信後処理
+* 作成者:    ning.zhu
+* @param    data　リターンデータ
+* @return   なし
+******************************************************************************/
+function displayInitialData(data) {
+        var jsonData = JSON.parse(data);
+        var results = jsonData['results'];
+
+        if (results.serverErrorCd == "1" || results.serverErrorCd == "9") {
+        SCM.unblock();
+        showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+        return;
+    }
+                
+    // ページのパラメータをクリア
+        //clearHiddenParam();
+
+        //　理由コード追加
+        /*var reasonList = results.reason;
+        if (reasonList!=null && reasonList.length>0) {
+                for (var i=0; i<reasonList.length; i++) {
+                        $("#reason").append($('<option>').html(reasonList[i]).val(reasonList[i]));
+                }
+        }*/
+        
+        //グリッド列初期化
+        //initGridColumns();
+
+        // ページのレイアウトをセット
+        //$('#detailLineLimit').val(results.detailLineLimit);
+
+        //loadGridData([]);
+        // 登録画面初期表示時、空白行が1行表示されている状態
+        //addOneRow(results.costCategoryList);
+
+        SCM.unblock();
+        
+}
+
+/******************************************************************************
+* 関数名:    detailAdd
+* 処理内容:  保管場所(移動先)セルの様式
+* 作成者:    ning.zhu
+* 更新者:    zhou
+* @param    なし
+* @return   なし
+******************************************************************************/
+function detailAdd() {
+        // メッセージのクリア
+        clearMsg("ordSoSlipInputErrorMsg");
+
+        //上限数取得
+        var upperLimit = 99;
+        var ids = $("#summaryGrid").jqGrid("getDataIDs");
+        var cnt = ids.length;
+        if (cnt + 1 > parseInt(upperLimit)) {
+                var messages = new Array();
+                var reg = new RegExp("\\{0\\}", 'g');
+                var m = '{0}追加：{0}データ数が{1}件を超えるため、{0}追加できません。';
+                var msg = m.replace(reg, '明細');
+                msg = msg.replace('{1}', upperLimit);
+                messages.push(msg);
+                showWarnMsg(messages, 'ordSoSlipInputErrorMsg');
+                return;
+        }
+
+        //空白行１行を追加
+        addOneRow(glCostCategoryList);
+        switchInputEnabled(false, cnt + 1, false, true);
+}
+
+/******************************************************************************
+ * 関数名:   allClear
+ * 処理内容: 一括クリアイベント
+ * 作成者:   
+ * @param   なし
+ * @return  なし
+ ******************************************************************************/
+function allClear(){
+        // メッセージのクリア
+        clearMsg("ordSoSlipInputErrorMsg");
+
+        //既に入力されている全明細の情報をクリア
+        $("#summaryGrid").clearGridData();
+        $("#priceGrid").clearGridData();
+        $("#deliveryGrid").clearGridData();
+        $("#invoiceGrid").clearGridData();
+        $("#statusGrid").clearGridData();
+
+        glRowCount = 0;
+        // 空白行が１行を追加
+        addOneRow();
+}
+
+/**
+ * メッセージのクリア。
+ * <p>
+ * 関数名: clearMsg<br>
+ * 処理内容: メッセージのクリア。<br>
+ * 作成者: sbt_tyamasaki<br>
+ * </p>
+ * @param msgId メッセージ領域ID
+ * @returns なし
+ */
+function clearMsg(msgId){
+        var msgSelector = '#' + msgId;    // idセレクタ
+        $(msgSelector).html('');
+        $(msgSelector).hide();
+}
+
+/*******************************************************************************
+ * 関数名:    backFunc
+ * 処理内容:  戻るイベント
+ * 作成者:    ning.zhu
+ * @param    なし
+ * @return   なし
+ ******************************************************************************/
+function backFunc(){
+        SCM.jsConfirm("入力した情報は全て削除されますが、よろしいですか？", returnHomePage);
+}
+
+/******************************************************************************
+ * 関数名:    returnHomePage
+ * 処理内容:  確認メッセージのOK押下時、メニューへ戻る
+ * 作成者:    ning.zhu
+ * @param    isAgree
+ * @returns  なし
+ ******************************************************************************/
+var returnHomePage = function(isAgree){
+        if(isAgree){
+                window.location.replace('/scm/top');
+        }
+};
+
+function kariTouroku() {
+        $('#registMode').val('TEMP_REGIST');
+        glAction = '仮登録';
+        registFunc();
+}
+
+function touroku() {
+        $('#registMode').val('REGIST');
+        glAction = '登録';
+        registFunc();
+}
+
+function restore() {
+        $('#registMode').val('RESTORE');
+        glAction = '復元';
+        registFunc();
+}
+
+function cancel() {
+        $('#registMode').val('CANCEL');
+        glAction = '取消';
+        registFunc();
+}
+
+/******************************************************************************
+ * 関数名: registFunc
+ * 処理内容: 登録ボタン押下時の処理。
+ * 作成者:   AT
+ * @param なし
+ * @returns なし
+ ******************************************************************************/
+function registFunc() {
+        // result →OKボタンを押下された＝true/   右上×ボタン=false   キャンセルボタン＝false
+        var callback = function(result) {
+                if (result) {
+                        // 画面ブロック
+                        SCM.block();
+                        // メッセージのクリア
+                        clearMsg("ordSoSlipInputErrorMsg");
+                        
+                        //ヘッダの送信データ追加
+                        var hdrlen = glHdrItemNames.length;
+                        var hdrData = new Map();
+                        for (var i=0; i<hdrlen; i++) {
+                                if (glHdrItemNames[i].dataSet==true) {
+                                        var itemName = glHdrItemNames[i].itemName;
+                                        // 一括納入と入出荷作業不要設定
+                                        if (itemName == 'massDeliveryFlag' || itemName == 'arrvlShipWorkFlag') {
+                                                if (isChecked('#' + itemName)) {
+                                                        $('#' + itemName).val("on");
+                                                } else {
+                                                        $('#' + itemName).val("off");
+                                                }
+                                        }
+                                        var attr = glHdrAttrDefinitionMap[itemName];
+                                        if (glHdrItemNames[i].internal==true) {
+                                                attr = 5;
+                                        }
+                                        if (attr == ATTR_DISPLAY_ONLY) {
+                                                if (glHdrItemNames[i].postCd==true) {
+                                                        hdrData[itemName] = $('#'+itemName+'1').text()+$('#'+itemName+'2').text();                                                        
+                                                } else {
+                                                        hdrData[itemName] = $('#'+itemName).text();                                                        
+                                                        if (hdrData[itemName] == null || hdrData[itemName] == '') {
+                                                                hdrData[itemName] = $('#'+itemName).val();
+                                                        }
+                                                }
+                                        } else if (attr == ATTR_INPUT || attr == ATTR_INPUT_REQUIRED || attr == ATTR_INPUT_DISABLED || attr == ATTR_HIDDEN) {
+                                                if (glHdrItemNames[i].postCd==true) {
+                                                        hdrData[itemName] = $('#'+itemName+'1').val()+$('#'+itemName+'2').val();
+                                                } else {
+                                                        hdrData[itemName] = $('#'+itemName).val();
+                                                        if (hdrData[itemName] == null || hdrData[itemName] == '') {
+                                                                if (itemName != 'shipDayCond' && itemName != 'expensesShipReasonCd' && itemName != 'returnReasonCd') {
+                                                                        hdrData[itemName] = $('#'+itemName).text();
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                        if (itemName=='soSlipNo' && $('#'+itemName).text()=='-') {
+                                                hdrData[itemName] = null;
+                                        }
+                                }
+                        }
+                        
+                        //明細の送信データ追加
+                        var ids = $("#summaryGrid").jqGrid("getDataIDs");
+                        var len = ids.length;
+                        var dtlList = new Array();
+                        for (var i=0; i<len; i++) {
+                                var summaryData = $("#summaryGrid").jqGrid("getRowData", ids[i]);
+                                var priceData = $("#priceGrid").jqGrid("getRowData", ids[i]);
+                                var deliveryData = $("#deliveryGrid").jqGrid("getRowData", ids[i]);
+                                var invoiceData = $("#invoiceGrid").jqGrid("getRowData", ids[i]);
+                                var statusData = $("#statusGrid").jqGrid("getRowData", ids[i]);
+                                var dtlData = new Map();
+                                
+                                for (var j=0; j<glSummaryGridModel.length; j++) {
+                                        if (glSummaryGridModel[j].dataSet==true) {
+                                                var itemName = glSummaryGridModel[j].name;
+                                                var attr = glDtlAttrDefinitionMap[itemName];
+                                                if (attr == ATTR_DISPLAY_ONLY) {
+                                                        dtlData[itemName] = $("#"+itemName+(i+1)).text();
+                                                        if (dtlData[itemName] == null || dtlData[itemName] == '') {
+                                                                dtlData[itemName] = $("#"+itemName+(i+1)).val();
+                                                        }
+                                                        if (itemName=="itemNm") {
+                                                                dtlData["itemCd"] = $("#itemCd"+(i+1)).val();                                                        
+                                                        }
+                                                } else if (attr == ATTR_INPUT || attr == ATTR_INPUT_REQUIRED || attr == ATTR_INPUT_DISABLED || attr == ATTR_HIDDEN) {
+                                                        dtlData[itemName] = $("#"+itemName+(i+1)).val();
+                                                        if (dtlData[itemName] == null || dtlData[itemName] == '') {
+                                                                // IMSIタイプが選択可能な場合、選択必須
+                                                                if (itemName == "imsiType" && imsiTypeIsRequired[i+1] == true) {
+                                                                        dtlData[itemName] = "00";
+                                                                }
+                                                                // ドロップダウンに「選択してください」場合に対象外
+                                                                if (itemName != "costCategory" && itemName != "rejectionReasonCd" && itemName != "imsiType"  
+                                                                        && itemName != "itemAttribute" && itemName != "contractCfc") {
+                                                                        dtlData[itemName] = $("#"+itemName+(i+1)).text();
+                                                                }                                                                
+                                                        }
+                                                }
+                                        }
+                                }
+                                
+                                for (var j=0; j<glPriceGridModel.length; j++) {
+                                        if (glPriceGridModel[j].dataSet==true) {
+                                                var itemName = glPriceGridModel[j].name;
+                                                var attr = glDtlAttrDefinitionMap[itemName];
+                                                if (attr == ATTR_DISPLAY_ONLY) {
+                                                        dtlData[itemName] = $("#"+itemName+(i+1)).text();
+                                                } else if (attr == ATTR_INPUT || attr == ATTR_INPUT_REQUIRED || attr == ATTR_INPUT_DISABLED || attr == ATTR_HIDDEN) {
+                                                        dtlData[itemName] = $("#"+itemName+(i+1)).val();
+                                                        if (dtlData[itemName] == null) {
+                                                                dtlData[itemName] = $("#"+itemName+(i+1)).text();
+                                                        }
+                                                }
+                                        }
+                                }
+
+                                for (var j=0; j<glDeliveryGridModel.length; j++) {
+                                        if (glDeliveryGridModel[j].dataSet==true) {
+                                                var itemName = glDeliveryGridModel[j].name;
+                                                var attr = glDtlAttrDefinitionMap[itemName];
+                                                var tmpItemName = itemName;
+                                                // 倉庫の場合
+                                                if (itemName == 'locationCd') {
+                                                        attr = glDtlAttrDefinitionMap[glDeliveryGridModel[j].attrName];
+                                                }
+                                                if (attr == ATTR_DISPLAY_ONLY) {
+                                                        dtlData[itemName] = $("#"+itemName+(i+1)).text();
+                                                } else if (attr == ATTR_INPUT || attr == ATTR_INPUT_REQUIRED || attr == ATTR_INPUT_DISABLED || attr == ATTR_HIDDEN) {                                                        
+                                                        if (itemName == 'locationCd') {
+                                                                tmpItemName = 'deliveryGrid  #locationCd';
+                                                        }
+                                                        dtlData[itemName] = $("#"+tmpItemName+(i+1)).val();
+                                                        if (dtlData[itemName] == null && itemName != 'locationCd') {
+                                                                dtlData[itemName] = $("#"+tmpItemName+(i+1)).text();
+                                                        }
+                                                }
+                                        }
+                                }
+
+                                for (var j=0; j<glInvoiceGridModel.length; j++) {
+                                        if (glInvoiceGridModel[j].dataSet==true) {
+                                                var itemName = glInvoiceGridModel[j].name;
+                                                var attr = glDtlAttrDefinitionMap[itemName];
+                                                if (attr == ATTR_DISPLAY_ONLY) {
+                                                        dtlData[itemName] = $("#"+itemName+(i+1)).text();
+                                                } else if (attr == ATTR_INPUT || attr == ATTR_INPUT_REQUIRED || attr == ATTR_INPUT_DISABLED || attr == ATTR_HIDDEN) {
+                                                        dtlData[itemName] = $("#"+itemName+(i+1)).val();
+                                                        if (dtlData[itemName] == null) {
+                                                                dtlData[itemName] = $("#"+itemName+(i+1)).text();
+                                                        }
+                                                }
+                                        }
+                                }
+
+                                for (var j=0; j<glStatusGridModel.length; j++) {
+                                        if (glStatusGridModel[j].dataSet==true) {
+                                                var itemName = glStatusGridModel[j].name;
+                                                var attr = glDtlAttrDefinitionMap[itemName];
+                                                if (attr == ATTR_DISPLAY_ONLY) {
+                                                        dtlData[itemName] = $("#"+itemName+(i+1)).text();
+                                                } else if (attr == ATTR_INPUT || attr == ATTR_INPUT_REQUIRED || attr == ATTR_INPUT_DISABLED || attr == ATTR_HIDDEN) {
+                                                        dtlData[itemName] = $("#"+itemName+(i+1)).val();
+                                                        if (dtlData[itemName] == null) {
+                                                                dtlData[itemName] = $("#"+itemName+(i+1)).text();
+                                                        }
+                                                }
+                                        }
+                                }
+                                dtlList.push(dtlData);
+                        }
+                        //hdrData['payment'] = 'payment';
+                        var tmpHdr = new Array();
+                        tmpHdr.push(hdrData);
+                        glHdr = tmpHdr;
+                        glDtlList = dtlList;
+                        
+                        console.log(glHdr);
+                        console.log(glDtlList);
+                        validate();
+                }
+        };
+        SCM.jsConfirm("登録しますか？", callback);
+};
+
+function validate() {
+        if (glDtlList==null || glDtlList.length==0) {
+                
+                alert("登録する明細データがありません。");
+                return;
+        }
+
+        // JSONに変換
+        var jsonHdr = JSON.stringify(glHdr);
+        $('#hdHdr').val(jsonHdr);
+        var jsonDtlList = JSON.stringify(glDtlList);
+        $('#hdDtlList').val(jsonDtlList);
+        
+        Util.ajaxCall($("#").attr('action'), "insert", ['moveType', 'hdHdr', 'hdDtlList', 'mode', 'registMode'], ['onRegistCallback(data)',], {
+                serviceComponentId:"insertCmpId",
+                blockUI:true
+        });        
+}
+
+function onRegistCallback(data) {
+        // 検索結果を取得
+        var jsondata = JSON.parse(data);
+        var results = jsondata['results'];
+
+    if(results == undefined) {
+                SCM.unblock();
+                showSystemErrorWindow(jsondata);
+                return;
+        }
+    
+        // 警告の場合
+        //if(results.serverErrorCd === '1' || results.serverErrorCd === '9') {
+        //        glServerMessage = glServerMessage.concat(results.serverMessage);
+        //}
+
+        //バリデーションエラー時
+    if (results.serverErrorCd == '1' || results.serverErrorCd == '9') {
+            showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+            //alert("在庫金額調整が完了しました。登録に失敗したデータが存在する為、画面で確認してください。");
+            SCM.unblock();
+        } else {
+        // 正常終了時
+                if (results.serverMessage != null && results.serverMessage.length > 0) {
+                        showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+                }
+                //受注伝票入力移動タイプ変更
+                $('#mode').val(results.mode);
+                $('#hdSoSlipNo').val(results.soSlipNo);
+                $('#moveType').val($('#attrMoveType').text());
+                $('#hdCompleted').val(true);
+                $.each(glMoveType, function(index){
+                        if (this.value == $('#moveType').val()) {
+                                $('#hdCostCategoryGrp').val(this.costCategoryGrp);
+                                $('#hdLocationCfc').val(this.locationCfc);
+                                $('#returnCfc').val(this.returnCfc);
+                                $('#originalStorageType').val(this.prevStorageKind);
+                                $('#moveStorageType').val(this.afterStorageKind);
+                                return false;
+                        }
+                });
+                Util.ajaxCall($("#").attr('action'), "init",
+                                ['moveType', 'mode', 'hdSoSlipNo', 'hdCostCategoryGrp', 'hdLocationCfc', 'hdCompleted', 'returnCfc', 'originalStorageType', 'moveStorageType'],
+                                ['displayInitialInputData(data)'], {
+                        serviceComponentId:"initCmpId",
+                        blockUI:true
+                });
+        }
+}
+
+function regist() {
+        if (glAddList==null || glAddList.length==0) {
+                // 画面ブロック解除
+                SCM.unblock();
+                alert("登録する明細データがありません。");
+                return;
+        }
+        // JSONに変換
+        var list = [];
+        list.push(glAddList[0]);
+        var json = JSON.stringify(list);
+        $('#hdItemList').val(json);
+        $('#insertMode').val("1");
+        glAddList.shift();
+        
+        Util.ajaxCall($("#").attr('action'), "insert", ['hdItemList', 'recordDate', 'reason', 'insertMode'], ['onRegistCallback(data)',], {
+                serviceComponentId:"insertCmpId",
+                blockUI:true
+        });        
+}
+
+/**
+ * CSVダウンロード前処理
+ */
+function downloadCSV() {
+
+        // タイムアウト値を設定(1分)
+        //SCM.setAjaxTimeout(60000);
+        $("#hdSoSlipNo").val($("#soSlipNoText").val());
+        Util.ajaxCall($("#").attr('action'), "downloadCSV", ['hdSoSlipNo'], ['downloadAfter(data)',], {
+                serviceComponentId:"downloadCmpId",
+                blockUI:true
+        });        
+}
+
+/**
+ * CSVダウンロード後処理
+ */
+function downloadAfter(data) {
+
+        // タイムアウト値を設定(1分:デフォルト)
+        //SCM.setAjaxTimeout(60000);
+
+        // ダウンロード結果を取得
+        var jsondata = JSON.parse(data);
+        var results = jsondata['results'];
+        var attachFileDto = results.attachFileDto;
+        
+        console.log(results);
+        
+        if (results.serverErrorCd === '1') {
+                // 警告の場合
+                showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+                // 画面ブロック解除
+                SCM.unblock();
+                return;
+        } else if (results.serverErrorCd === '9') {
+                // 異常の場合
+                showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+                // 画面ブロック解除
+                SCM.unblock();
+                return;
+        }
+        // 画面ブロック解除
+        SCM.unblock();
+
+        // 添付ファイル情報を設定
+        $('#attachFileInfo').val(getAttachFileInfo(attachFileDto));
+        // ダウンロード実行
+        $('#download').click();
+
+}
+
+/**
+ * ファイルアップロードボタン押下
+ */
+function uploadBtn(){
+        SCM.block();
+        Util.ajaxCall($("#").attr('action'), "fileUpload", ['inventoryCfc','txtYear','month','yearAndMonth','StorageDir'],
+                        ['fileUpload_After(data)'], {
+                arkAjaxComponentId: "Upload",
+        blockUI: true
+        });
+}
+
+/******************************************************************************
+ * 関数名: 　　fileUpload_After
+ * 処理内容: ファイルアップロード後処理
+ * 作成者:   
+ * @param 　　jsonStr
+ * @returns なし
+ ******************************************************************************/
+function fileUpload_After(jsonStr) {
+        var jsonData = JSON.parse(jsonStr);
+        var results = jsonData['results'];
+
+        // バリデーション発生の場合、メッセージを出す、画面遷移は実施しない。
+        if (results.serverErrorCd == "1" || results.serverErrorCd == "9") {
+        SCM.unblock();
+        showWarnMsg(results.serverMessage, 'ordSoSlipInputErrorMsg');
+        return;
+    }
+        
+        /*
+        //処理件数情報
+        var msg = MSG_WHI_ERROR_WEB_EXCEEDARRIVEQUANTITYERROR.replace("{0}", results.actInvCount);
+
+        // 全てのロケーションの処理が正常終了していない場合、メッセージを出す、画面遷移は実施しない。
+        if (results.slipStsErrFlg == true) {
+        showWarnMsg(results.serverMessage, 'errMsgArea');
+        //完了件数が表示しました。
+        SCM.jsAlert(msg);
+        SCM.unblock();
+        return;
+    }
+         */
+        
+        var callback = function(result) {
+                // OKボタン押下後、棚卸伝票検索画面へ遷移する。遷移元IDを引き渡し
+                var paramArray =[{"paramName":"paramFormIDFrom","paramValue":PAGE_TO_WHIINVENTORYREG}];
+                setTransferParameter(PAGE_TO_WHIINVENTORYSCH, paramArray);
+        };
+
+        //完了メッセージの表示
+        SCM.jsAlert(msg, null);
+
+        SCM.unblock();
+}
+
+function onBomCheckClick() {
+        var gridData = $("#statusGrid").getRowData();
+        var i = 0;
+        $.each(gridData, function() {
+                if (glBomRows[i]==true) {
+                        if ($("#extractBom").prop("checked")==true) {
+                            $("[id="+(i+1)+"]").each(function(){ $(this).show(); });                                
+                        } else {                                
+                            $("[id="+(i+1)+"]").each(function(){ $(this).hide(); });                                
+                        }
+                }
+                i++;
+        });
+}
+
+function toErrorContentDisplayPrev() {
+    // 画面ブロック
+    SCM.block();
+    //openErrorContentPrev();
+    return false;
+}
